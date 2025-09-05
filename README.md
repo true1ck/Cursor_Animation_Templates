@@ -1,6 +1,31 @@
-# 🎨 Cursor Animation Templates
+# 🎨 Cursor Animation Gallery
 
-A collection of beautiful, interactive cursor animations for modern web applications. Each template is self-contained and ready to use in your projects.
+A unified web interface showcasing beautiful cursor animations in one seamless experience. Features a modern hamburger menu to switch between different animation effects dynamically.
+
+## 🌟 NEW: Unified Gallery Interface
+
+**Primary File:** `index.html` - **Main gallery interface with hamburger menu navigation**
+
+### Features:
+- 🍔 **Hamburger Menu**: Modern slide-out navigation on the left
+- 🔄 **Dynamic Loading**: Switch between animations seamlessly
+- 📱 **Responsive Design**: Works perfectly on desktop and mobile
+- ⚡ **Performance Optimized**: Animations load on-demand
+- ℹ️ **Animation Info**: Each effect includes description overlay
+- 🎯 **Clean Interface**: Minimal UI focused on the animation experience
+
+### How to Use the Gallery:
+1. Open `index.html` in your web browser
+2. Click the hamburger menu (☰) in the top-left corner
+3. Select any animation to view it instantly
+4. Switch between animations using the menu
+5. Each animation includes an info panel with details
+
+---
+
+## 📂 Individual Animation Files
+
+*Note: Each animation is also available as a standalone file, but we recommend using the unified gallery above.*
 
 ## 🚀 Quick Start
 
@@ -51,6 +76,57 @@ Simply download any HTML file and open it in your browser to see the animation i
 - 🎭 Background text overlay
 - 🌈 Subtle color shifting
 - 📱 Responsive design
+
+---
+
+### 3. ❄️ Ice Crystal Animation
+**File:** `ice_crystal_complete.html`
+
+**Description:**
+- **Visual Effect:** Magical ice crystals that follow your cursor with realistic winter physics
+- **Colors:** Cool blues, whites, and crystalline effects with shimmer
+- **Behavior:**
+  - Realistic snowflake shapes with multiple arms and branches
+  - Ice crystals attracted to cursor movement
+  - Shimmering and rotating effects
+  - Click to create ice explosions
+  - Adjustable crystal count, size, and attraction strength
+- **Best For:** Winter themes, fantasy websites, elegant presentations
+- **Performance:** Advanced physics with optimized crystal rendering
+
+**Features:**
+- ❄️ Realistic ice crystal shapes
+- ✨ Shimmer and glow effects
+- 🎮 Interactive controls panel
+- 💥 Click explosion effects
+- 🌌 Beautiful winter background
+- 🔄 Smooth physics simulation
+
+---
+
+### 4. 🔥 Fire Trail Animation
+**File:** `fire_trail_animation.html`
+
+**Description:**
+- **Visual Effect:** Subtle, realistic fire particles with gentle flame physics and consistent warm colors
+- **Colors:** Soft orange-red to golden yellow palette (easy on the eyes)
+- **Behavior:**
+  - Gentle fire particles that rise and flicker naturally
+  - Velocity-responsive intensity (faster movement = more particles)
+  - Realistic heat-based physics with subtle turbulence
+  - Occasional floating embers for atmosphere
+  - Custom fire-themed cursor
+- **Best For:** Creative portfolios, cozy websites, autumn themes, gaming interfaces
+- **Performance:** Optimized with 200 particle limit and efficient rendering
+
+**Features:**
+- 🔥 Realistic but subtle fire physics
+- 🎨 Consistent warm color palette
+- 👁️ Easy on the eyes with reduced opacity
+- 🌪️ Gentle turbulence and wind effects
+- ✨ Floating ember particles
+- 🖱️ Custom fire cursor
+- 📱 Mobile-responsive design
 
 ## 🛠️ How to Use
 

@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursor Animation Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow: hidden;
+            background: #000;
+            color: white;
+            height: 100vh;
+        }
+
+        /* Hamburger Menu Styles */
+        .hamburger-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100vh;
+            background: rgba(20, 20, 20, 0.15);
+            backdrop-filter: blur(5px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 1000;
+            transform: translateX(0);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hamburger-menu.closed {
+            transform: translateX(-300px);
+        }
+
+        .hamburger-menu.transparent {
+            background: rgba(20, 20, 20, 0.05);
+            backdrop-filter: blur(2px);
+            border-right: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .hamburger-menu.opaque {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-header {
+            padding: 30px 25px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .menu-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .menu-items {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            transition: width 0.3s ease;
+            z-index: -1;
+        }
+
+        .menu-item:hover::before {
+            width: 100%;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: #667eea;
+        }
+
+        .menu-item.active {
+            background: rgba(102, 126, 234, 0.2);
+            border-left-color: #667eea;
+        }
+
+        .menu-item.active::before {
+            width: 100%;
+        }
+
+        .menu-icon {
+            font-size: 1.2rem;
+            margin-right: 15px;
+            min-width: 25px;
+            text-align: center;
+        }
+
+        .menu-text {
+            flex: 1;
+        }
+
+        .menu-name {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .menu-desc {
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        /* Hamburger Toggle Button */
+        .hamburger-toggle {
+            position: fixed;
+            top: 25px;
+            left: 325px;
+            width: 50px;
+            height: 50px;
+            background: rgba(20, 20, 20, 0.3);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .hamburger-toggle.closed {
+            left: 25px;
+        }
+
+        .transparency-toggle {
+            position: fixed;
+            top: 85px;
+            left: 325px;
+            width: 50px;
+            height: 35px;
+            background: rgba(20, 20, 20, 0.3);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9rem;
+            color: white;
+        }
+        
+        .transparency-toggle.closed {
+            left: 25px;
+        }
+        
+        .transparency-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            transition: all 0.2s ease;
+        }
+
+        .hamburger-toggle:hover, .transparency-toggle:hover {
+            background: rgba(30, 30, 30, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        .hamburger-lines {
+            width: 20px;
+            height: 14px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .hamburger-line {
+            width: 100%;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .hamburger-toggle.closed .hamburger-line:nth-child(1) {
+            transform: translateY(6px) rotate(45deg);
+        }
+
+        .hamburger-toggle.closed .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-toggle.closed .hamburger-line:nth-child(3) {
+            transform: translateY(-6px) rotate(-45deg);
+        }
+
+        /* Animation Display Area */
+        .animation-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+
+        /* Animation Info Overlay */
+        .animation-info {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px 25px;
+            max-width: 350px;
+            z-index: 999;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .animation-info.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .animation-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+
+        .animation-info p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 1000;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .hamburger-menu {
+                width: 100%;
+            }
+            
+            .hamburger-menu.closed {
+                transform: translateX(-100%);
+            }
+
+            .animation-info {
+                top: 90px;
+                left: 25px;
+                right: 25px;
+                max-width: none;
+            }
+            
+            .transparency-toggle {
+                top: 85px;
+                left: 25px;
+            }
+            
+            .hamburger-toggle {
+                left: 25px;
+            }
+        }
+
+        /* Menu Overlay for mobile */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .menu-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Default background gradient */
+        .default-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: -1;
+        }
+
+        /* Welcome message */
+        .welcome-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1;
+            max-width: 500px;
+            padding: 0 20px;
+        }
+
+        .welcome-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ffffff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .welcome-cta {
+            font-size: 1rem;
+            opacity: 0.6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .welcome-cta::before {
+            content: '👈';
+            font-size: 1.2rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(0);
+            }
+            40% {
+                transform: translateX(-10px);
+            }
+            60% {
+                transform: translateX(-5px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .welcome-title {
+                font-size: 2rem;
+            }
+            
+            .welcome-subtitle {
+                font-size: 1rem;
+            }
+
+            .welcome-cta::before {
+                content: '👆';
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Default Background -->
+    <div class="default-background"></div>
+
+    <!-- Welcome Message -->
+    <div class="welcome-message" id="welcomeMessage">
+        <h1 class="welcome-title">Cursor Animation Gallery</h1>
+        <p class="welcome-subtitle">Explore beautiful cursor animations and effects. Each animation brings your cursor to life with unique visual experiences.</p>
+        <div class="welcome-cta">Choose an animation from the menu to begin</div>
+    </div>
+
+    <!-- Hamburger Toggle Button -->
+    <div class="hamburger-toggle" id="hamburgerToggle">
+        <div class="hamburger-lines">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+        </div>
+    </div>
+    
+    <!-- Transparency Toggle Button -->
+    <div class="transparency-toggle" id="transparencyToggle" title="Toggle menu transparency">
+        <svg class="transparency-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+        </svg>
+    </div>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- Hamburger Menu -->
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <div class="menu-header">
+            <div class="menu-title">Animation Gallery</div>
+            <div class="menu-subtitle">Select an animation to view</div>
+        </div>
+        
+        <div class="menu-items" id="menuItems">
+            <div class="menu-item" data-animation="ice-crystal">
+                <div class="menu-icon">❄️</div>
+                <div class="menu-text">
+                    <div class="menu-name">Ice Crystal</div>
+                    <div class="menu-desc">Magical ice crystals follow your cursor</div>
+                </div>
+            </div>
+            
+            <div class="menu-item" data-animation="fire-trail">
+                <div class="menu-icon">🔥</div>
+                <div class="menu-text">
+                    <div class="menu-name">Fire Trail</div>
+                    <div class="menu-desc">Dynamic fire particles with realistic physics</div>
+                </div>
+            </div>
+            
+            <div class="menu-item" data-animation="fluid-particles">
+                <div class="menu-icon">💧</div>
+                <div class="menu-text">
+                    <div class="menu-name">Fluid Particles</div>
+                    <div class="menu-desc">Smooth fluid-like particle system</div>
+                </div>
+            </div>
+            
+            <div class="menu-item" data-animation="sparkle-trail">
+                <div class="menu-icon">✨</div>
+                <div class="menu-text">
+                    <div class="menu-name">Sparkle Trail</div>
+                    <div class="menu-desc">Elegant sparkle trail with connections</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animation Display Container -->
+    <div class="animation-container" id="animationContainer">
+        <!-- Animations will be loaded here dynamically -->
+    </div>
+
+    <!-- Animation Info Overlay -->
+    <div class="animation-info" id="animationInfo">
+        <h3 id="animationTitle">Animation Name</h3>
+        <p id="animationDescription">Animation description will appear here.</p>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" id="loadingSpinner"></div>
+
+    <script>
+        class AnimationGallery {
+            constructor() {
+                this.currentAnimation = null;
+                this.isMenuTransparent = true;
+                this.isMenuOpen = true;
+                this.animations = {
+                    'ice-crystal': {
+                        title: 'Ice Crystal Magic',
+                        description: 'Beautiful ice crystals that follow your cursor with magical winter effects. Features realistic crystal physics and shimmering particles.',
+                        file: 'ice_crystal_complete.html'
+                    },
+                    'fire-trail': {
+                        title: 'Fire Trail Effect',
+                        description: 'Dynamic fire particles that create realistic flame trails behind your cursor. Includes heat simulation and ember effects.',
+                        file: 'fire_trail_animation.html'
+                    },
+                    'fluid-particles': {
+                        title: 'Fluid Particles',
+                        description: 'Smooth fluid-like particle system inspired by modern web design. Creates beautiful flowing effects with vibrant colors.',
+                        file: 'fluid_particles_animation.html'
+                    },
+                    'sparkle-trail': {
+                        title: 'Sparkle Trail',
+                        description: 'Elegant sparkle trail animation with connected particles and smooth flowing effects. Perfect for premium websites.',
+                        file: 'sparkle_trail_animation.html'
+                    }
+                };
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupMenuItems();
+            }
+
+            setupEventListeners() {
+                const hamburgerToggle = document.getElementById('hamburgerToggle');
+                const transparencyToggle = document.getElementById('transparencyToggle');
+                const hamburgerMenu = document.getElementById('hamburgerMenu');
+                const menuOverlay = document.getElementById('menuOverlay');
+
+                // Initialize menu as open and transparent
+                this.initializeMenu();
+
+                // Hamburger toggle
+                hamburgerToggle.addEventListener('click', () => {
+                    this.toggleMenu();
+                });
+                
+                // Transparency toggle
+                transparencyToggle.addEventListener('click', () => {
+                    this.toggleTransparency();
+                });
+
+                // Menu overlay click to close
+                menuOverlay.addEventListener('click', () => {
+                    this.closeMenu();
+                });
+
+                // Close menu on escape key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.closeMenu();
+                    }
+                });
+            }
+
+            setupMenuItems() {
+                const menuItems = document.querySelectorAll('.menu-item');
+                menuItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const animationType = item.dataset.animation;
+                        this.loadAnimation(animationType);
+                        this.setActiveMenuItem(item);
+                        this.closeMenu();
+                    });
+                });
+            }
+
+            initializeMenu() {
+                const hamburgerMenu = document.getElementById('hamburgerMenu');
+                hamburgerMenu.classList.add('transparent');
+                this.isMenuTransparent = true;
+                this.isMenuOpen = true;
+            }
+            
+            toggleMenu() {
+                const hamburgerToggle = document.getElementById('hamburgerToggle');
+                const hamburgerMenu = document.getElementById('hamburgerMenu');
+                const menuOverlay = document.getElementById('menuOverlay');
+
+                if (this.isMenuOpen) {
+                    this.closeMenu();
+                } else {
+                    this.openMenu();
+                }
+            }
+            
+            openMenu() {
+                const hamburgerToggle = document.getElementById('hamburgerToggle');
+                const transparencyToggle = document.getElementById('transparencyToggle');
+                const hamburgerMenu = document.getElementById('hamburgerMenu');
+                const menuOverlay = document.getElementById('menuOverlay');
+                
+                hamburgerToggle.classList.remove('closed');
+                transparencyToggle.classList.remove('closed');
+                hamburgerMenu.classList.remove('closed');
+                if (!this.isMenuTransparent) {
+                    menuOverlay.classList.add('visible');
+                }
+                this.isMenuOpen = true;
+            }
+            
+            toggleTransparency() {
+                const hamburgerMenu = document.getElementById('hamburgerMenu');
+                const menuOverlay = document.getElementById('menuOverlay');
+                const transparencyToggle = document.getElementById('transparencyToggle');
+                
+                if (this.isMenuTransparent) {
+                    // Make opaque
+                    hamburgerMenu.classList.remove('transparent');
+                    hamburgerMenu.classList.add('opaque');
+                    if (this.isMenuOpen) {
+                        menuOverlay.classList.add('visible');
+                    }
+                    // Change to eye-off icon
+                    transparencyToggle.innerHTML = `
+                        <svg class="transparency-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
+                        </svg>
+                    `;
+                    transparencyToggle.title = "Make menu transparent";
+                    this.isMenuTransparent = false;
+                } else {
+                    // Make transparent
+                    hamburgerMenu.classList.remove('opaque');
+                    hamburgerMenu.classList.add('transparent');
+                    menuOverlay.classList.remove('visible');
+                    // Change to eye-on icon
+                    transparencyToggle.innerHTML = `
+                        <svg class="transparency-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                        </svg>
+                    `;
+                    transparencyToggle.title = "Make menu opaque";
+                    this.isMenuTransparent = true;
+                }
+            }
+
+            closeMenu() {
+                const hamburgerToggle = document.getElementById('hamburgerToggle');
+                const transparencyToggle = document.getElementById('transparencyToggle');
+                const hamburgerMenu = document.getElementById('hamburgerMenu');
+                const menuOverlay = document.getElementById('menuOverlay');
+
+                hamburgerToggle.classList.add('closed');
+                transparencyToggle.classList.add('closed');
+                hamburgerMenu.classList.add('closed');
+                menuOverlay.classList.remove('visible');
+                this.isMenuOpen = false;
+            }
+
+            setActiveMenuItem(activeItem) {
+                document.querySelectorAll('.menu-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                activeItem.classList.add('active');
+            }
+
+            showLoading() {
+                document.getElementById('loadingSpinner').style.display = 'block';
+            }
+
+            hideLoading() {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
+
+            showAnimationInfo(animationType) {
+                const animationInfo = document.getElementById('animationInfo');
+                const animationTitle = document.getElementById('animationTitle');
+                const animationDescription = document.getElementById('animationDescription');
+                const welcomeMessage = document.getElementById('welcomeMessage');
+
+                const animation = this.animations[animationType];
+                if (animation) {
+                    animationTitle.textContent = animation.title;
+                    animationDescription.textContent = animation.description;
+                    animationInfo.classList.add('visible');
+                    welcomeMessage.style.display = 'none';
+                }
+            }
+
+            hideAnimationInfo() {
+                const animationInfo = document.getElementById('animationInfo');
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                
+                animationInfo.classList.remove('visible');
+                welcomeMessage.style.display = 'block';
+            }
+
+            async loadAnimation(animationType) {
+                const animation = this.animations[animationType];
+                if (!animation) return;
+
+                this.showLoading();
+
+                try {
+                    // Clear current animation
+                    this.clearCurrentAnimation();
+
+                    // Load animation content using iframe to avoid CORS
+                    await this.loadAnimationIframe(animation.file, animationType);
+                    
+                    // Show animation info
+                    this.showAnimationInfo(animationType);
+                    
+                    this.currentAnimation = animationType;
+                } catch (error) {
+                    console.error('Error loading animation:', error);
+                    alert('Failed to load animation. Please try again.');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+            
+            async loadAnimationIframe(file, animationType) {
+                const container = document.getElementById('animationContainer');
+                
+                // Create iframe for animation
+                const iframe = document.createElement('iframe');
+                iframe.src = file;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                iframe.style.position = 'absolute';
+                iframe.style.top = '0';
+                iframe.style.left = '0';
+                iframe.setAttribute('data-animation', animationType);
+                
+                container.appendChild(iframe);
+                
+                // Wait for iframe to load
+                return new Promise((resolve) => {
+                    iframe.onload = () => {
+                        resolve();
+                    };
+                });
+            }
+
+
+            clearCurrentAnimation() {
+                const container = document.getElementById('animationContainer');
+                
+                // Clear container (remove all iframes and content)
+                container.innerHTML = '';
+                
+                // Hide animation info
+                this.hideAnimationInfo();
+                
+                // Clear active menu item
+                document.querySelectorAll('.menu-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                this.currentAnimation = null;
+            }
+        }
+
+        // Initialize the gallery when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.animationGallery = new AnimationGallery();
+        });
+    </script>
+</body>
+</html>

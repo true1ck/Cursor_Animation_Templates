@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>❄️ Ice Crystal Cursor Effect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0c1445 0%, #1a2557 25%, #2d4a7b 50%, #1a2557 75%, #0c1445 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            position: relative;
+            cursor: none;
+        }
+
+        /* Animated background stars */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20% 30%, rgba(255, 255, 255, 0.8), transparent),
+                radial-gradient(2px 2px at 40% 70%, rgba(255, 255, 255, 0.6), transparent),
+                radial-gradient(1px 1px at 90% 40%, rgba(255, 255, 255, 0.9), transparent),
+                radial-gradient(1px 1px at 50% 50%, rgba(255, 255, 255, 0.7), transparent);
+            background-repeat: repeat;
+            background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px;
+            animation: sparkle 20s linear infinite;
+        }
+
+        @keyframes sparkle {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(360deg); }
+        }
+
+        .container {
+            position: fixed;
+            top: 50px;
+            left: 50px;
+            z-index: 100;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(135, 206, 250, 0.8);
+        }
+
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #87ceeb, #ffffff, #b0e0e6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% { filter: drop-shadow(0 0 5px rgba(135, 206, 250, 0.5)); }
+            100% { filter: drop-shadow(0 0 20px rgba(135, 206, 250, 1)); }
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .controls label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #e6f3ff;
+        }
+
+        .controls input[type="range"] {
+            width: 200px;
+            margin-top: 5px;
+            appearance: none;
+            height: 6px;
+            background: linear-gradient(90deg, #87ceeb, #ffffff);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .controls input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: radial-gradient(circle, #ffffff, #87ceeb);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(135, 206, 250, 0.8);
+        }
+
+        #ice-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        #ice-crystals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        /* Ice Crystal Styles */
+        .ice-crystal {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            opacity: 0.8;
+            animation: crystalRotate 4s linear infinite;
+            filter: drop-shadow(0 0 8px rgba(135, 206, 250, 0.6));
+        }
+
+        .ice-crystal::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 14px solid rgba(135, 206, 250, 0.9);
+            border-radius: 2px;
+        }
+
+        .ice-crystal::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(60deg);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 14px solid rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+        }
+
+        /* Crystal variations */
+        .ice-crystal.type-1::before {
+            border-bottom-color: rgba(176, 224, 230, 0.9);
+            border-left-width: 6px;
+            border-right-width: 6px;
+            border-bottom-width: 12px;
+        }
+
+        .ice-crystal.type-2::before {
+            border-bottom-color: rgba(173, 216, 230, 0.9);
+            border-left-width: 10px;
+            border-right-width: 10px;
+            border-bottom-width: 16px;
+        }
+
+        .ice-crystal.type-3::before {
+            border-bottom-color: rgba(135, 206, 250, 1);
+            border-left-width: 5px;
+            border-right-width: 5px;
+            border-bottom-width: 10px;
+        }
+
+        @keyframes crystalRotate {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(0.9); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .ice-crystal.attracted {
+            animation: crystalAttracted 0.5s ease-out forwards;
+        }
+
+        @keyframes crystalAttracted {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1.1); }
+        }
+
+        /* Cursor trail effect */
+        .cursor-trail {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8), rgba(135, 206, 250, 0.4));
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            animation: trailFade 0.8s ease-out forwards;
+        }
+
+        @keyframes trailFade {
+            0% { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: scale(0.3); 
+            }
+        }
+
+        /* Ice formation effect on cursor */
+        .ice-formation {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            pointer-events: none;
+            z-index: 999;
+            animation: iceForm 1s ease-out forwards;
+        }
+
+        .ice-formation::before,
+        .ice-formation::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 18px solid rgba(255, 255, 255, 0.8);
+            border-radius: 3px;
+        }
+
+        .ice-formation::after {
+            transform: translate(-50%, -50%) rotate(60deg);
+            border-bottom-color: rgba(135, 206, 250, 0.6);
+        }
+
+        @keyframes iceForm {
+            0% { 
+                opacity: 0; 
+                transform: scale(0) rotate(0deg); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.2) rotate(180deg); 
+            }
+            100% { 
+                opacity: 0; 
+                transform: scale(0.5) rotate(360deg); 
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                top: 20px;
+                left: 20px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .controls {
+                padding: 15px;
+            }
+            
+            .controls input[type="range"] {
+                width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">❄️ Ice Crystal Magic</h1>
+        <p class="subtitle">Move your cursor to create beautiful ice crystals</p>
+        
+        <div class="controls">
+            <label for="crystal-count">Crystal Count: <span id="count-display">50</span></label>
+            <input type="range" id="crystal-count" min="10" max="100" value="50">
+            
+            <label for="crystal-size">Crystal Size: <span id="size-display">1.0</span></label>
+            <input type="range" id="crystal-size" min="0.5" max="2.0" step="0.1" value="1.0">
+            
+            <label for="attraction-strength">Attraction: <span id="attraction-display">0.5</span></label>
+            <input type="range" id="attraction-strength" min="0" max="1" step="0.1" value="0.5">
+        </div>
+    </div>
+    
+    <canvas id="ice-canvas"></canvas>
+    
+    <!-- Ice Crystal Particles Container -->
+    <div id="ice-crystals-container"></div>
+    
+    <script>
+        class IceCrystalEffect {
+            constructor() {
+                this.canvas = document.getElementById('ice-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.crystalsContainer = document.getElementById('ice-crystals-container');
+                
+                // Mouse/Cursor tracking
+                this.mouse = {
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2,
+                    trail: []
+                };
+                
+                // Settings
+                this.settings = {
+                    crystalCount: 50,
+                    crystalSize: 1.0,
+                    attractionStrength: 0.5,
+                    maxTrailLength: 20
+                };
+                
+                // Ice crystals array
+                this.crystals = [];
+                
+                // Animation frame ID
+                this.animationId = null;
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupCanvas();
+                this.createCrystals();
+                this.setupEventListeners();
+                this.animate();
+            }
+            
+            setupCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                });
+            }
+            
+            createCrystals() {
+                this.crystals = [];
+                for (let i = 0; i < this.settings.crystalCount; i++) {
+                    this.crystals.push(new IceCrystal(this.canvas.width, this.canvas.height, this.settings.crystalSize));
+                }
+            }
+            
+            setupEventListeners() {
+                // Mouse movement tracking
+                document.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                    
+                    // Add to trail
+                    this.mouse.trail.push({
+                        x: e.clientX,
+                        y: e.clientY,
+                        timestamp: Date.now()
+                    });
+                    
+                    // Limit trail length
+                    if (this.mouse.trail.length > this.settings.maxTrailLength) {
+                        this.mouse.trail.shift();
+                    }
+                    
+                    // Create cursor trail effect
+                    this.createCursorTrail(e.clientX, e.clientY);
+                    
+                    // Occasionally create ice formation effect
+                    if (Math.random() < 0.3) {
+                        this.createIceFormation(e.clientX, e.clientY);
+                    }
+                });
+                
+                // Click effect
+                document.addEventListener('click', (e) => {
+                    this.createIceExplosion(e.clientX, e.clientY);
+                });
+                
+                // Control panel interactions
+                this.setupControls();
+            }
+            
+            setupControls() {
+                const crystalCountSlider = document.getElementById('crystal-count');
+                const crystalSizeSlider = document.getElementById('crystal-size');
+                const attractionSlider = document.getElementById('attraction-strength');
+                const varietySlider = document.getElementById('crystal-variety');
+                
+                const countDisplay = document.getElementById('count-display');
+                const sizeDisplay = document.getElementById('size-display');
+                const attractionDisplay = document.getElementById('attraction-display');
+                const varietyDisplay = document.getElementById('variety-display');
+                
+                crystalCountSlider.addEventListener('input', (e) => {
+                    this.settings.crystalCount = parseInt(e.target.value);
+                    countDisplay.textContent = e.target.value;
+                    this.createCrystals();
+                });
+                
+                crystalSizeSlider.addEventListener('input', (e) => {
+                    this.settings.crystalSize = parseFloat(e.target.value);
+                    sizeDisplay.textContent = e.target.value;
+                    this.crystals.forEach(crystal => crystal.size = this.settings.crystalSize);
+                });
+                
+                attractionSlider.addEventListener('input', (e) => {
+                    this.settings.attractionStrength = parseFloat(e.target.value);
+                    attractionDisplay.textContent = e.target.value;
+                });
+                
+                varietySlider.addEventListener('input', (e) => {
+                    this.settings.crystalVariety = parseInt(e.target.value);
+                    const varietyNames = ['Low', 'Medium', 'High'];
+                    varietyDisplay.textContent = varietyNames[parseInt(e.target.value) - 1];
+                    this.createCrystals(); // Recreate crystals with new variety
+                });
+            }
+            
+            createCursorTrail(x, y) {
+                const trail = document.createElement('div');
+                trail.className = 'cursor-trail';
+                trail.style.left = x + 'px';
+                trail.style.top = y + 'px';
+                document.body.appendChild(trail);
+                
+                setTimeout(() => {
+                    trail.remove();
+                }, 800);
+            }
+            
+            createIceFormation(x, y) {
+                const formation = document.createElement('div');
+                formation.className = 'ice-formation';
+                formation.style.left = (x - 15) + 'px';
+                formation.style.top = (y - 15) + 'px';
+                document.body.appendChild(formation);
+                
+                setTimeout(() => {
+                    formation.remove();
+                }, 1000);
+            }
+            
+            createIceExplosion(x, y) {
+                // Create multiple crystals exploding from click point
+                const crystalCount = this.settings.crystalVariety * 6; // More variety = more explosion crystals
+                for (let i = 0; i < crystalCount; i++) {
+                    const angle = (Math.PI * 2 * i) / crystalCount;
+                    const speed = 3 + Math.random() * 5;
+                    const crystal = new IceCrystal(this.canvas.width, this.canvas.height, this.settings.crystalSize, this.settings.crystalVariety);
+                    
+                    crystal.x = x;
+                    crystal.y = y;
+                    crystal.vx = Math.cos(angle) * speed;
+                    crystal.vy = Math.sin(angle) * speed;
+                    crystal.life = 80 + Math.random() * 40; // Variable life
+                    crystal.isExplosion = true;
+                    crystal.explosionScale = 0.8 + Math.random() * 0.7;
+                    
+                    this.crystals.push(crystal);
+                }
+                
+                // Add screen shake effect
+                document.body.style.transform = 'translate(' + (Math.random() - 0.5) * 4 + 'px, ' + (Math.random() - 0.5) * 4 + 'px)';
+                setTimeout(() => {
+                    document.body.style.transform = 'translate(0, 0)';
+                }, 100);
+            }
+            
+            createFreezeEffect() {
+                // Create freeze particles around cursor
+                for (let i = 0; i < 5; i++) {
+                    const particle = {
+                        x: this.mouse.x + (Math.random() - 0.5) * 100,
+                        y: this.mouse.y + (Math.random() - 0.5) * 100,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        life: 60,
+                        maxLife: 60,
+                        size: 2 + Math.random() * 3
+                    };
+                    this.specialEffects.freezeParticles.push(particle);
+                }
+            }
+            
+            createCrystalRain() {
+                // Create crystal rain effect
+                const now = Date.now();
+                if (now - this.specialEffects.lastRainTime > 100) { // Limit rain frequency
+                    for (let i = 0; i < 20; i++) {
+                        const crystal = new IceCrystal(this.canvas.width, this.canvas.height, this.settings.crystalSize, this.settings.crystalVariety);
+                        crystal.x = Math.random() * this.canvas.width;
+                        crystal.y = -50;
+                        crystal.vy = 3 + Math.random() * 4;
+                        crystal.vx = (Math.random() - 0.5) * 2;
+                        crystal.isRain = true;
+                        crystal.life = 200;
+                        this.crystals.push(crystal);
+                    }
+                    this.specialEffects.lastRainTime = now;
+                }
+            }
+            
+            update() {
+                this.crystals.forEach((crystal, index) => {
+                    crystal.update(this.mouse, this.settings.attractionStrength, this.settings.freezeMode);
+                    
+                    // Remove crystals that have expired
+                    if ((crystal.isExplosion || crystal.isRain) && crystal.life <= 0) {
+                        this.crystals.splice(index, 1);
+                    }
+                    
+                    // Remove rain crystals that fall off screen
+                    if (crystal.isRain && crystal.y > this.canvas.height + 100) {
+                        this.crystals.splice(index, 1);
+                    }
+                });
+                
+                // Update freeze particles
+                this.specialEffects.freezeParticles.forEach((particle, index) => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.life--;
+                    particle.vy += 0.05; // gravity
+                    
+                    if (particle.life <= 0) {
+                        this.specialEffects.freezeParticles.splice(index, 1);
+                    }
+                });
+                
+                // Clean old trail points
+                const now = Date.now();
+                this.mouse.trail = this.mouse.trail.filter(point => now - point.timestamp < 1000);
+            }
+            
+            draw() {
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw cursor trail on canvas
+                if (this.mouse.trail.length > 1) {
+                    this.ctx.beginPath();
+                    const trailColor = this.settings.freezeMode ? 'rgba(200, 230, 255, 0.6)' : 'rgba(135, 206, 250, 0.4)';
+                    this.ctx.strokeStyle = trailColor;
+                    this.ctx.lineWidth = this.settings.freezeMode ? 3 : 2;
+                    this.ctx.lineCap = 'round';
+                    
+                    for (let i = 1; i < this.mouse.trail.length; i++) {
+                        const prev = this.mouse.trail[i - 1];
+                        const curr = this.mouse.trail[i];
+                        
+                        this.ctx.moveTo(prev.x, prev.y);
+                        this.ctx.lineTo(curr.x, curr.y);
+                    }
+                    this.ctx.stroke();
+                }
+                
+                // Draw freeze particles
+                this.specialEffects.freezeParticles.forEach(particle => {
+                    this.ctx.save();
+                    const opacity = particle.life / particle.maxLife;
+                    this.ctx.globalAlpha = opacity;
+                    this.ctx.fillStyle = 'rgba(200, 230, 255, 0.8)';
+                    this.ctx.shadowBlur = 8;
+                    this.ctx.shadowColor = 'rgba(200, 230, 255, 0.6)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.restore();
+                });
+                
+                // Draw crystals on canvas
+                this.crystals.forEach(crystal => {
+                    crystal.draw(this.ctx);
+                });
+                
+                // Draw freeze mode overlay
+                if (this.settings.freezeMode) {
+                    this.ctx.save();
+                    this.ctx.globalAlpha = 0.1;
+                    this.ctx.fillStyle = 'rgba(200, 230, 255, 0.3)';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.ctx.restore();
+                }
+            }
+            
+            animate() {
+                this.update();
+                this.draw();
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+            
+            destroy() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+        }
+
+        class IceCrystal {
+            constructor(canvasWidth, canvasHeight, size = 1.0, variety = 3) {
+                this.canvasWidth = canvasWidth;
+                this.canvasHeight = canvasHeight;
+                this.size = size;
+                this.variety = variety;
+                
+                // Position
+                this.x = Math.random() * canvasWidth;
+                this.y = Math.random() * canvasHeight;
+                
+                // Velocity
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                
+                // Physics properties
+                this.mass = 0.5 + Math.random() * 0.5;
+                this.friction = 0.98;
+                
+                // Visual properties
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                this.opacity = 0.6 + Math.random() * 0.4;
+                this.scale = 0.8 + Math.random() * 0.4;
+                
+                // Crystal type (affects appearance) - more variety based on setting
+                this.type = Math.floor(Math.random() * (variety + 2));
+                this.shape = Math.floor(Math.random() * 4); // Different crystal shapes
+                this.arms = 4 + Math.floor(Math.random() * 4); // 4-7 arms
+                
+                // Enhanced color variations with more realistic ice colors
+                this.colors = [
+                    'rgba(135, 206, 250, ',  // Light blue
+                    'rgba(176, 224, 230, ',  // Powder blue
+                    'rgba(173, 216, 230, ',  // Light blue
+                    'rgba(255, 255, 255, ',  // White
+                    'rgba(200, 230, 255, ',  // Ice blue
+                    'rgba(220, 240, 255, ',  // Pale ice
+                    'rgba(180, 210, 240, ',  // Deep ice blue
+                    'rgba(240, 248, 255, '   // Almost white
+                ];
+                this.color = this.colors[Math.floor(Math.random() * this.colors.length)];
+                this.innerColor = 'rgba(255, 255, 255, '; // Always white center
+                
+                // Attraction state
+                this.attracted = false;
+                this.attractionRadius = 100;
+                
+                // Special states
+                this.isExplosion = false;
+                this.isRain = false;
+                this.isFrozen = false;
+                this.life = Infinity;
+                this.explosionScale = 1.0;
+                
+                // More realistic properties
+                this.density = 0.7 + Math.random() * 0.6; // Affects how it moves
+                this.shimmer = Math.random(); // Shimmer effect
+                this.wobble = (Math.random() - 0.5) * 0.01; // Natural wobble
+                this.magnetism = 0.8 + Math.random() * 0.4; // How much it's affected by cursor
+            }
+            
+            update(mouse, attractionStrength, freezeMode) {
+                // Calculate distance to mouse
+                const dx = mouse.x - this.x;
+                const dy = mouse.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // Apply attraction/repulsion with magnetism factor
+                if (distance < this.attractionRadius) {
+                    const force = (this.attractionRadius - distance) / this.attractionRadius;
+                    const forceX = (dx / distance) * force * attractionStrength * this.magnetism;
+                    const forceY = (dy / distance) * force * attractionStrength * this.magnetism;
+                    
+                    this.vx += forceX * 0.08;
+                    this.vy += forceY * 0.08;
+                    this.attracted = true;
+                } else {
+                    this.attracted = false;
+                }
+                
+                // Freeze mode - crystals slow down and become more stable
+                if (freezeMode) {
+                    this.vx *= 0.95;
+                    this.vy *= 0.95;
+                    this.isFrozen = true;
+                } else {
+                    this.isFrozen = false;
+                }
+                
+                // Natural snowflake behavior
+                if (!this.isExplosion && !this.isFrozen) {
+                    // Gentle zigzag falling motion like real snow
+                    this.vx += Math.sin(Date.now() * 0.001 + this.x * 0.01) * 0.01;
+                    
+                    // Realistic falling speed based on density
+                    this.vy += 0.02 * this.density;
+                    
+                    // Air resistance
+                    this.vx *= 0.995;
+                    this.vy *= 0.998;
+                    
+                    // Natural wobble in the air
+                    this.vx += this.wobble * Math.sin(Date.now() * 0.003);
+                }
+                
+                // Rain crystals fall faster
+                if (this.isRain) {
+                    this.vy += 0.1;
+                }
+                
+                // Apply friction
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                
+                // Update position
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Update rotation with wobble
+                this.rotation += this.rotationSpeed + this.wobble;
+                
+                // Update shimmer effect
+                this.shimmer = Math.sin(Date.now() * 0.005 + this.x * 0.01) * 0.3 + 0.7;
+                
+                // Handle explosion crystals
+                if (this.isExplosion) {
+                    this.life--;
+                    this.opacity = Math.max(0, this.life / 80);
+                    this.scale *= this.explosionScale;
+                }
+                
+                // Handle rain crystals
+                if (this.isRain) {
+                    this.life--;
+                    if (this.life < 50) {
+                        this.opacity = this.life / 50;
+                    }
+                }
+                
+                // Wrap around screen edges (except for rain)
+                if (!this.isRain) {
+                    if (this.x < -20) this.x = this.canvasWidth + 20;
+                    if (this.x > this.canvasWidth + 20) this.x = -20;
+                    if (this.y < -20) this.y = this.canvasHeight + 20;
+                    if (this.y > this.canvasHeight + 20) this.y = -20;
+                }
+            }
+            
+            draw(ctx) {
+                ctx.save();
+                
+                // Move to crystal position
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.scale(this.scale * this.size, this.scale * this.size);
+                
+                // Dynamic size based on state
+                const baseSize = this.attracted ? 15 : (10 + this.density * 5);
+                const glowIntensity = this.shimmer * (this.attracted ? 1.5 : 1.0);
+                
+                // Enhanced glow effect with shimmer
+                ctx.shadowBlur = 20 * glowIntensity;
+                ctx.shadowColor = this.color + (0.8 * this.opacity) + ')';
+                
+                // Draw realistic snowflake based on shape type
+                this.drawSnowflakeShape(ctx, baseSize);
+                
+                ctx.restore();
+            }
+            
+            drawSnowflakeShape(ctx, baseSize) {
+                const opacity = this.opacity * this.shimmer;
+                
+                // Main snowflake structure
+                ctx.beginPath();
+                ctx.strokeStyle = this.color + opacity + ')';
+                ctx.fillStyle = this.color + (opacity * 0.3) + ')';
+                ctx.lineWidth = 1 + (this.density * 0.5);
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                // Draw main arms
+                for (let i = 0; i < this.arms; i++) {
+                    const angle = (Math.PI * 2 * i) / this.arms;
+                    const armLength = baseSize * (0.8 + Math.random() * 0.4);
+                    
+                    ctx.save();
+                    ctx.rotate(angle);
+                    
+                    // Main arm
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(0, -armLength);
+                    ctx.stroke();
+                    
+                    // Draw branches based on crystal variety
+                    this.drawBranches(ctx, armLength, this.variety);
+                    
+                    ctx.restore();
+                }
+                
+                // Draw center hexagon/circle
+                this.drawCenter(ctx, baseSize * 0.2);
+                
+                // Add sparkle points
+                this.drawSparkles(ctx, baseSize);
+            }
+            
+            drawBranches(ctx, armLength, complexity) {
+                const branchCount = complexity + 1;
+                const branchSpacing = armLength / (branchCount + 1);
+                
+                for (let j = 1; j <= branchCount; j++) {
+                    const branchY = -branchSpacing * j;
+                    const branchLength = (armLength * 0.3) * (1 - j / (branchCount + 1));
+                    
+                    // Left branch
+                    ctx.beginPath();
+                    ctx.moveTo(0, branchY);
+                    ctx.lineTo(-branchLength * 0.7, branchY - branchLength * 0.5);
+                    ctx.stroke();
+                    
+                    // Right branch
+                    ctx.beginPath();
+                    ctx.moveTo(0, branchY);
+                    ctx.lineTo(branchLength * 0.7, branchY - branchLength * 0.5);
+                    ctx.stroke();
+                    
+                    // Add sub-branches for higher complexity
+                    if (complexity > 2 && j < branchCount) {
+                        const subBranchLength = branchLength * 0.4;
+                        
+                        // Left sub-branches
+                        ctx.beginPath();
+                        ctx.moveTo(-branchLength * 0.7, branchY - branchLength * 0.5);
+                        ctx.lineTo(-branchLength * 0.9, branchY - branchLength * 0.3);
+                        ctx.stroke();
+                        
+                        // Right sub-branches
+                        ctx.beginPath();
+                        ctx.moveTo(branchLength * 0.7, branchY - branchLength * 0.5);
+                        ctx.lineTo(branchLength * 0.9, branchY - branchLength * 0.3);
+                        ctx.stroke();
+                    }
+                }
+            }
+            
+            drawCenter(ctx, radius) {
+                // Draw center with inner glow
+                const centerGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+                centerGradient.addColorStop(0, this.innerColor + (this.opacity * 0.9) + ')');
+                centerGradient.addColorStop(0.5, this.color + (this.opacity * 0.6) + ')');
+                centerGradient.addColorStop(1, this.color + (this.opacity * 0.1) + ')');
+                
+                ctx.fillStyle = centerGradient;
+                ctx.beginPath();
+                
+                if (this.shape === 0) {
+                    // Hexagonal center
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (Math.PI * 2 * i) / 6;
+                        const x = Math.cos(angle) * radius;
+                        const y = Math.sin(angle) * radius;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                } else {
+                    // Circular center
+                    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                }
+                
+                ctx.fill();
+            }
+            
+            drawSparkles(ctx, baseSize) {
+                // Add random sparkle points
+                const sparkleCount = Math.floor(this.variety + Math.random() * 3);
+                
+                for (let i = 0; i < sparkleCount; i++) {
+                    const sparkleAngle = Math.random() * Math.PI * 2;
+                    const sparkleDistance = Math.random() * baseSize * 0.8;
+                    const sparkleX = Math.cos(sparkleAngle) * sparkleDistance;
+                    const sparkleY = Math.sin(sparkleAngle) * sparkleDistance;
+                    const sparkleSize = 1 + Math.random() * 2;
+                    
+                    ctx.save();
+                    ctx.translate(sparkleX, sparkleY);
+                    ctx.fillStyle = 'rgba(255, 255, 255, ' + (this.opacity * this.shimmer * 0.8) + ')';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = 'rgba(255, 255, 255, 0.6)';
+                    
+                    // Draw sparkle as a small star
+                    ctx.beginPath();
+                    for (let j = 0; j < 4; j++) {
+                        const angle = (Math.PI * 2 * j) / 4;
+                        const x = Math.cos(angle) * sparkleSize;
+                        const y = Math.sin(angle) * sparkleSize;
+                        if (j === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            }
+        }
+
+        // Initialize the ice crystal effect when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const iceEffect = new IceCrystalEffect();
+            
+            // Clean up on page unload
+            window.addEventListener('beforeunload', () => {
+                iceEffect.destroy();
+            });
+        });
+    </script>
+</body>
+</html>
