@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire Trail Animation - Cursor Effect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 50%, #0d1421 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow-x: hidden;
+            cursor: none; /* Hide default cursor for immersion */
+        }
+
+        /* Fire canvas */
+        #fireCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            pointer-events: none;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Demo content */
+        .demo-content {
+            position: relative;
+            z-index: 1;
+            padding: 100px 50px;
+            color: #ffffff;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .demo-content h1 {
+            font-size: 4rem;
+            margin-bottom: 30px;
+            font-weight: 700;
+            text-shadow: 0 0 20px rgba(255, 69, 0, 0.6), 0 0 40px rgba(255, 140, 0, 0.4);
+            background: linear-gradient(45deg, #ff4500, #ff8c00, #ffd700, #ff6347);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fireGradient 3s ease-in-out infinite;
+        }
+
+        @keyframes fireGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .demo-content p {
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            max-width: 600px;
+            line-height: 1.6;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .demo-button {
+            padding: 15px 40px;
+            background: linear-gradient(45deg, #ff4500, #ff6347);
+            border: 2px solid rgba(255, 69, 0, 0.3);
+            border-radius: 50px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: none;
+            transition: all 0.3s ease;
+            margin: 10px 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .demo-button:hover::before {
+            left: 100%;
+        }
+
+        .demo-button:hover {
+            background: linear-gradient(45deg, #ff6347, #ff4500);
+            border-color: rgba(255, 140, 0, 0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(255, 69, 0, 0.4);
+        }
+
+        .fire-info {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Custom cursor */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ff4500;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.1s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .demo-content h1 { font-size: 2.5rem; }
+            .demo-content p { font-size: 1.1rem; }
+            .demo-content { padding: 50px 20px; }
+            body { cursor: auto; } /* Show cursor on mobile */
+            .cursor { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom cursor -->
+    <div class="cursor"></div>
+
+    <!-- Fire canvas -->
+    <canvas id="fireCanvas"></canvas>
+
+    <!-- Demo content -->
+    <div class="demo-content">
+        <h1>🔥 Fire Trail</h1>
+        <p>Experience the power of fire following your every move. This dynamic fire trail animation creates realistic flame particles that dance behind your cursor.</p>
+        <button class="demo-button">Ignite</button>
+        <button class="demo-button">Blaze</button>
+        <p style="margin-top: 50px; font-size: 1rem; opacity: 0.7;">
+            Realistic fire physics • Particle system • Smooth performance
+        </p>
+    </div>
+
+    <div class="fire-info">
+        Move your cursor to create fire trails • Desktop optimized
+    </div>
+
+    <script>
+        // Enhanced Fire Trail Animation System
+        class FireTrailAnimation {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                
+                this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+                this.particles = [];
+                this.embers = [];
+                this.time = 0;
+                this.isMouseMoving = false;
+                this.mouseVelocity = { x: 0, y: 0 };
+                this.lastMousePos = { x: 0, y: 0 };
+                
+                this.setupCanvas();
+                this.setupEventListeners();
+                this.animate();
+            }
+            
+            setupCanvas() {
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+            }
+            
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            
+            setupEventListeners() {
+                let mouseTimeout;
+                const cursor = document.querySelector('.cursor');
+                
+                document.addEventListener('mousemove', (e) => {
+                    // Calculate mouse velocity for more dynamic fire
+                    this.mouseVelocity.x = e.clientX - this.lastMousePos.x;
+                    this.mouseVelocity.y = e.clientY - this.lastMousePos.y;
+                    
+                    this.lastMousePos.x = this.mouse.x;
+                    this.lastMousePos.y = this.mouse.y;
+                    
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                    
+                    // Update custom cursor position
+                    if (cursor) {
+                        cursor.style.left = e.clientX - 10 + 'px';
+                        cursor.style.top = e.clientY - 10 + 'px';
+                    }
+                    
+                    this.isMouseMoving = true;
+                    
+                    clearTimeout(mouseTimeout);
+                    mouseTimeout = setTimeout(() => {
+                        this.isMouseMoving = false;
+                        this.mouseVelocity.x = 0;
+                        this.mouseVelocity.y = 0;
+                    }, 150);
+                    
+                    // Create fire particles with velocity-based intensity
+                    this.createFireParticles();
+                    this.createEmbers();
+                });
+                
+                // Create ambient fire particles
+                this.createAmbientFire();
+            }
+            
+            createAmbientFire() {
+                // Create some ambient particles for atmosphere
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        this.particles.push(this.createFireParticle({
+                            x: Math.random() * this.canvas.width,
+                            y: this.canvas.height + 50
+                        }, true));
+                    }, i * 200);
+                }
+            }
+            
+            createFireParticles() {
+                if (!this.isMouseMoving) return;
+                
+                // Calculate intensity based on mouse velocity (more subtle)
+                const velocity = Math.sqrt(this.mouseVelocity.x ** 2 + this.mouseVelocity.y ** 2);
+                const intensity = Math.min(velocity / 30, 2); // Reduced max intensity
+                
+                // Create fewer particles for subtlety
+                const baseCount = 2;
+                const particleCount = Math.floor(baseCount + intensity * 2);
+                
+                for (let i = 0; i < particleCount; i++) {
+                    // Create particles in a line behind the cursor for trail effect
+                    const offset = i * 0.1;
+                    const trailPos = {
+                        x: this.mouse.x - this.mouseVelocity.x * offset,
+                        y: this.mouse.y - this.mouseVelocity.y * offset
+                    };
+                    
+                    this.particles.push(this.createFireParticle(trailPos, intensity));
+                }
+                
+                // Limit particle count for performance
+                if (this.particles.length > 200) {
+                    this.particles = this.particles.slice(-200);
+                }
+            }
+            
+            createEmbers() {
+                if (!this.isMouseMoving || Math.random() > 0.7) return; // Less frequent
+                
+                // Create occasional subtle embers
+                if (Math.random() > 0.5) {
+                    this.embers.push(this.createEmber(this.mouse));
+                }
+                
+                // Limit ember count
+                if (this.embers.length > 20) {
+                    this.embers = this.embers.slice(-20);
+                }
+            }
+            
+            createFireParticle(pos, intensity = 1) {
+                // Softer, more consistent fire color palette
+                const fireStage = Math.random();
+                let color;
+                
+                if (fireStage < 0.3) {
+                    // Soft orange-red core
+                    color = { r: 180 + Math.random() * 30, g: 60 + Math.random() * 40, b: 10 + Math.random() * 15 };
+                } else if (fireStage < 0.6) {
+                    // Warm orange
+                    color = { r: 200 + Math.random() * 30, g: 100 + Math.random() * 50, b: 20 + Math.random() * 20 };
+                } else if (fireStage < 0.8) {
+                    // Golden orange
+                    color = { r: 220 + Math.random() * 25, g: 140 + Math.random() * 40, b: 30 + Math.random() * 25 };
+                } else {
+                    // Soft yellow
+                    color = { r: 240 + Math.random() * 15, g: 200 + Math.random() * 35, b: 60 + Math.random() * 40 };
+                }
+                
+                const spread = 10 + intensity * 5; // Smaller spread
+                const riseSpeed = 0.5 + intensity * 1; // Gentler rise
+                
+                return {
+                    x: pos.x + (Math.random() - 0.5) * spread,
+                    y: pos.y + (Math.random() - 0.5) * spread,
+                    vx: (Math.random() - 0.5) * (1 + intensity * 0.5), // Gentler horizontal movement
+                    vy: -(Math.random() * riseSpeed + 0.5), // Slower rise
+                    size: Math.random() * (4 + intensity) + 6, // Smaller particles
+                    color: color,
+                    life: 1.0,
+                    maxLife: 1.0,
+                    decay: Math.random() * 0.01 + 0.005, // Slower decay
+                    heat: Math.random() * 0.5 + 0.3,
+                    flicker: Math.random() * 0.2 + 0.1, // Less flicker
+                    turbulence: Math.random() * 1 + 0.5, // Less turbulence
+                    intensity: intensity,
+                    age: 0
+                };
+            }
+            
+            createEmber(pos) {
+                return {
+                    x: pos.x + (Math.random() - 0.5) * 20, // Smaller spread
+                    y: pos.y + (Math.random() - 0.5) * 20,
+                    vx: (Math.random() - 0.5) * 2, // Gentler movement
+                    vy: -(Math.random() * 1.5 + 0.3), // Slower rise
+                    size: Math.random() * 2 + 1.5, // Smaller size
+                    color: { r: 200 + Math.random() * 30, g: 120 + Math.random() * 60, b: 20 + Math.random() * 30 }, // Softer colors
+                    life: 1.0,
+                    decay: Math.random() * 0.008 + 0.004, // Slower decay
+                    glow: Math.random() * 0.3 + 0.3, // Gentler glow
+                    sparkle: Math.random() > 0.8 // Less frequent sparkle
+                };
+            }
+            
+            updateParticles() {
+                // Update fire particles with enhanced physics
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const particle = this.particles[i];
+                    particle.age += 0.016;
+                    
+                    // Gentler fire physics
+                    const turbulence = Math.sin(this.time * particle.turbulence) * particle.flicker * 0.5; // Reduced turbulence
+                    const windEffect = Math.sin(this.time * 0.3) * 0.15; // Gentler wind
+                    
+                    // Update position with subtle fire movement
+                    particle.x += particle.vx + turbulence + windEffect;
+                    particle.y += particle.vy;
+                    
+                    // Gentler fire physics
+                    particle.vy -= 0.04; // Lighter buoyancy
+                    particle.vx *= 0.985; // More air resistance for stability
+                    particle.vy *= 0.995; // More vertical air resistance
+                    
+                    // Heat dissipation affects movement
+                    if (particle.heat > 0.5) {
+                        particle.vy -= particle.heat * 0.02; // Hot particles rise faster
+                        particle.size *= 1.002; // Hot particles expand slightly
+                    }
+                    
+                    // Realistic fire lifecycle
+                    particle.life -= particle.decay;
+                    particle.heat = Math.max(0, particle.heat - 0.008);
+                    
+                    // Dynamic color transitions based on life and heat
+                    const lifeRatio = particle.life / particle.maxLife;
+                    const heatRatio = particle.heat;
+                    
+                    if (lifeRatio > 0.8) {
+                        // Young, hot fire - deep red/orange core
+                        particle.color.r = Math.min(255, 200 + heatRatio * 55);
+                        particle.color.g = Math.min(150, heatRatio * 150);
+                        particle.color.b = 0;
+                    } else if (lifeRatio > 0.5) {
+                        // Mature fire - orange to yellow
+                        particle.color.r = 255;
+                        particle.color.g = Math.min(255, 100 + lifeRatio * 155);
+                        particle.color.b = Math.min(50, (1 - lifeRatio) * 50);
+                    } else if (lifeRatio > 0.2) {
+                        // Cooling fire - yellow to orange
+                        particle.color.r = 255;
+                        particle.color.g = Math.max(150, 255 - (1 - lifeRatio) * 50);
+                        particle.color.b = Math.min(100, (1 - lifeRatio) * 100);
+                    } else {
+                        // Dying fire - fade out with smoke-like appearance
+                        const fade = lifeRatio / 0.2;
+                        particle.color.r = Math.max(100, 255 * fade);
+                        particle.color.g = Math.max(100, 200 * fade);
+                        particle.color.b = Math.max(50, 150 * fade);
+                    }
+                    
+                    // Size changes based on life
+                    if (lifeRatio > 0.7) {
+                        particle.size *= 1.01; // Grow initially
+                    } else {
+                        particle.size *= 0.997; // Then shrink
+                    }
+                    
+                    // Remove dead particles
+                    if (particle.life <= 0 || particle.size <= 1) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+                
+                // Update embers
+                for (let i = this.embers.length - 1; i >= 0; i--) {
+                    const ember = this.embers[i];
+                    
+                    ember.x += ember.vx;
+                    ember.y += ember.vy;
+                    ember.vy -= 0.02; // Light buoyancy
+                    ember.vx *= 0.995;
+                    ember.vy *= 0.995;
+                    
+                    ember.life -= ember.decay;
+                    ember.size *= 0.998;
+                    
+                    // Ember color cooling
+                    ember.color.g = Math.max(0, ember.color.g - 1);
+                    
+                    if (ember.life <= 0 || ember.size <= 0.5) {
+                        this.embers.splice(i, 1);
+                    }
+                }
+            }
+            
+            drawParticles() {
+                // Draw fire particles with multiple layers for realism
+                this.ctx.globalCompositeOperation = 'lighter';
+                
+                // Draw soft outer glow first
+                for (const particle of this.particles) {
+                    const alpha = particle.life * 0.4; // Reduced opacity
+                    const glowSize = particle.size * 3; // Smaller glow
+                    
+                    // Outer glow gradient
+                    const outerGradient = this.ctx.createRadialGradient(
+                        particle.x, particle.y, 0,
+                        particle.x, particle.y, glowSize
+                    );
+                    
+                    outerGradient.addColorStop(0, `rgba(${particle.color.r}, ${particle.color.g * 0.9}, ${particle.color.b}, ${alpha * 0.3})`);
+                    outerGradient.addColorStop(0.5, `rgba(${particle.color.r}, ${particle.color.g * 0.7}, ${particle.color.b * 0.5}, ${alpha * 0.15})`);
+                    outerGradient.addColorStop(1, `rgba(${particle.color.r * 0.9}, ${particle.color.g * 0.5}, ${particle.color.b * 0.3}, 0)`);
+                    
+                    this.ctx.fillStyle = outerGradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, glowSize, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Draw main fire body
+                this.ctx.globalCompositeOperation = 'screen';
+                for (const particle of this.particles) {
+                    const alpha = particle.life * 0.8;
+                    const mainSize = particle.size * 2;
+                    
+                    // Main fire gradient
+                    const mainGradient = this.ctx.createRadialGradient(
+                        particle.x, particle.y, 0,
+                        particle.x, particle.y, mainSize
+                    );
+                    
+                    mainGradient.addColorStop(0, `rgba(${particle.color.r}, ${particle.color.g}, ${particle.color.b}, ${alpha})`);
+                    mainGradient.addColorStop(0.3, `rgba(${particle.color.r}, ${Math.min(255, particle.color.g + 20)}, ${particle.color.b * 0.5}, ${alpha * 0.8})`);
+                    mainGradient.addColorStop(0.7, `rgba(${particle.color.r * 0.9}, ${particle.color.g * 0.7}, 0, ${alpha * 0.4})`);
+                    mainGradient.addColorStop(1, `rgba(${particle.color.r * 0.6}, ${particle.color.g * 0.3}, 0, 0)`);
+                    
+                    this.ctx.fillStyle = mainGradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(particle.x, particle.y, mainSize, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Draw hot core
+                this.ctx.globalCompositeOperation = 'lighter';
+                for (const particle of this.particles) {
+                    if (particle.heat > 0.5) {
+                        const alpha = particle.life * particle.heat * 0.6;
+                        const coreSize = particle.size * 0.8;
+                        
+                        // Hot core gradient
+                        const coreGradient = this.ctx.createRadialGradient(
+                            particle.x, particle.y, 0,
+                            particle.x, particle.y, coreSize
+                        );
+                        
+                        coreGradient.addColorStop(0, `rgba(255, 255, 200, ${alpha})`);
+                        coreGradient.addColorStop(0.5, `rgba(255, 200, 100, ${alpha * 0.6})`);
+                        coreGradient.addColorStop(1, `rgba(255, 150, 0, 0)`);
+                        
+                        this.ctx.fillStyle = coreGradient;
+                        this.ctx.beginPath();
+                        this.ctx.arc(particle.x, particle.y, coreSize, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                }
+                
+                // Draw embers
+                this.ctx.globalCompositeOperation = 'screen';
+                for (const ember of this.embers) {
+                    const alpha = ember.life * ember.glow;
+                    const emberSize = ember.size * 2;
+                    
+                    // Ember glow
+                    const emberGradient = this.ctx.createRadialGradient(
+                        ember.x, ember.y, 0,
+                        ember.x, ember.y, emberSize
+                    );
+                    
+                    emberGradient.addColorStop(0, `rgba(${ember.color.r}, ${ember.color.g}, ${ember.color.b}, ${alpha})`);
+                    emberGradient.addColorStop(0.5, `rgba(${ember.color.r}, ${ember.color.g * 0.7}, 0, ${alpha * 0.5})`);
+                    emberGradient.addColorStop(1, `rgba(${ember.color.r * 0.5}, 0, 0, 0)`);
+                    
+                    this.ctx.fillStyle = emberGradient;
+                    this.ctx.beginPath();
+                    this.ctx.arc(ember.x, ember.y, emberSize, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Sparkle effect for some embers
+                    if (ember.sparkle && Math.random() > 0.8) {
+                        this.ctx.globalCompositeOperation = 'lighter';
+                        this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.8})`;
+                        this.ctx.beginPath();
+                        this.ctx.arc(ember.x, ember.y, ember.size * 0.3, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        this.ctx.globalCompositeOperation = 'screen';
+                    }
+                }
+            }
+            
+            animate() {
+                // Clear canvas with slight trail effect
+                this.ctx.globalCompositeOperation = 'source-over';
+                this.ctx.fillStyle = 'rgba(12, 12, 12, 0.1)'; // Dark background with slight transparency
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Update and draw particles
+                this.updateParticles();
+                this.drawParticles();
+                
+                // Continue animation
+                this.time += 0.016;
+                requestAnimationFrame(() => this.animate());
+                
+                // Occasionally add ambient particles
+                if (Math.random() < 0.02 && this.particles.length < 50) {
+                    this.particles.push(this.createFireParticle({
+                        x: Math.random() * this.canvas.width,
+                        y: this.canvas.height + 50
+                    }, true));
+                }
+            }
+        }
+
+        // Initialize fire animation when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('fireCanvas');
+            new FireTrailAnimation(canvas);
+        });
+
+        // Button hover effects
+        document.querySelectorAll('.demo-button').forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                button.style.transform = 'translateY(-3px) scale(1.05)';
+            });
+            
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
