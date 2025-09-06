@@ -464,6 +464,14 @@
         </div>
         
         <div class="menu-items" id="menuItems">
+            <div class="menu-item" data-animation="cursor-fluid">
+                <div class="menu-icon">🌊</div>
+                <div class="menu-text">
+                    <div class="menu-name">Cursor Fluid</div>
+                    <div class="menu-desc">Real-time WebGL fluid dynamics with colorful trails</div>
+                </div>
+            </div>
+            
             <div class="menu-item" data-animation="ice-crystal">
                 <div class="menu-icon">❄️</div>
                 <div class="menu-text">
@@ -567,6 +575,11 @@
                 this.isMenuTransparent = true;
                 this.isMenuOpen = true;
                 this.animations = {
+                    'cursor-fluid': {
+                        title: 'Cursor Fluid Dynamics',
+                        description: 'Experience mesmerizing real-time fluid dynamics powered by WebGL. Create flowing, colorful trails that respond naturally to your cursor movements with advanced physics simulation.',
+                        file: 'cursor_fluid.html'
+                    },
                     'ice-crystal': {
                         title: 'Ice Crystal Magic',
                         description: 'Beautiful ice crystals that follow your cursor with magical winter effects. Features realistic crystal physics and shimmering particles.',
