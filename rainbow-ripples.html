@@ -28,29 +28,85 @@
             height: 100vh;
         }
 
-        .title {
+        .overlay-content {
             position: absolute;
-            top: 30px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            color: #fff;
-            font-size: 2rem;
-            font-weight: bold;
+            transform: translate(-50%, -50%);
             text-align: center;
-            z-index: 1000;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            z-index: 100;
+            pointer-events: none;
         }
-
-        .instructions {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #ccc;
-            font-size: 1rem;
-            text-align: center;
-            z-index: 1000;
-            opacity: 0.8;
+        
+        .title {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 4rem;
+            font-weight: 300;
+            color: #333;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+            animation: titleFadeIn 2s ease-out;
+        }
+        
+        .title span {
+            background: linear-gradient(45deg, #ff0000 0%, #ff8c00 14%, #ffd700 28%, #9acd32 42%, #00bfff 56%, #0000ff 70%, #8b00ff 84%, #ff1493 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .description {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 2rem 3rem;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: descFadeIn 2s ease-out 0.5s both;
+        }
+        
+        .description p {
+            color: #555;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 400;
+        }
+        
+        .description .highlight {
+            color: #ff1493;
+            font-weight: 600;
+        }
+        
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes descFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-out {
+            opacity: 0;
+            transition: opacity 2s ease-out;
         }
 
         .ripple {
@@ -135,8 +191,12 @@
 </head>
 <body>
     <div class="container">
-        <div class="title">🌈 Rainbow Ripples</div>
-        <div class="instructions">Click anywhere to create ripples • Move your mouse for continuous ripples</div>
+        <div class="overlay-content">
+            <h1 class="title"><span>Rainbow Ripples</span></h1>
+            <div class="description">
+                <p>Create mesmerizing <span class="highlight">rainbow ripples</span> that expand with vibrant colors across your screen, each click painting waves of pure spectrum magic.</p>
+            </div>
+        </div>
         <div class="center-pulse"></div>
     </div>
 
@@ -253,6 +313,14 @@
         setTimeout(() => {
             createRipple(window.innerWidth / 2, window.innerHeight / 2);
         }, 500);
+        
+        // Fade out overlay after 4 seconds
+        setTimeout(() => {
+            const overlay = document.querySelector('.overlay-content');
+            if (overlay) {
+                overlay.classList.add('fade-out');
+            }
+        }, 4000);
     </script>
 </body>
 </html>

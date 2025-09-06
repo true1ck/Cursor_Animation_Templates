@@ -29,54 +29,85 @@
             height: 100vh;
         }
 
-        /* Demo content */
-        .demo-content {
-            position: relative;
-            z-index: 1;
-            padding: 100px 50px;
-            color: white;
+        .overlay-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            z-index: 100;
+            pointer-events: none;
         }
-
-        .demo-content h1 {
+        
+        .title {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
             font-size: 4rem;
-            margin-bottom: 30px;
-            font-weight: 700;
-            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+            font-weight: 300;
+            color: #333;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+            animation: titleFadeIn 2s ease-out;
         }
-
-        .demo-content p {
-            font-size: 1.4rem;
-            margin-bottom: 40px;
-            opacity: 0.9;
-            max-width: 600px;
-            line-height: 1.6;
+        
+        .title span {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-
-        .demo-button {
-            padding: 15px 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px 20px;
+        
+        .description {
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 2rem 3rem;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: descFadeIn 2s ease-out 0.5s both;
         }
-
-        .demo-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.6);
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        
+        .description p {
+            color: #555;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 400;
+        }
+        
+        .description .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes descFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-out {
+            opacity: 0;
+            transition: opacity 2s ease-out;
         }
 
         /* Responsive */
@@ -88,19 +119,15 @@
     </style>
 </head>
 <body>
+    <div class="overlay-content">
+        <h1 class="title"><span>Fluid Particles</span></h1>
+        <div class="description">
+            <p>Immerse yourself in <span class="highlight">fluid dynamics</span> as vibrant particles flow and blend seamlessly, creating an ethereal dance of color and motion.</p>
+        </div>
+    </div>
+    
     <!-- Exact Supadev fluid canvas -->
     <canvas id="fluid" class="w-screen h-screen"></canvas>
-
-    <!-- Demo content -->
-    <div class="demo-content">
-        <h1>Supadev Fluid Animation</h1>
-        <p>This is an exact replica of the fluid cursor animation from supadev.so. Move your cursor around to see the beautiful fluid dynamics in action.</p>
-        <button class="demo-button">Hover Me</button>
-        <button class="demo-button">Try This</button>
-        <p style="margin-top: 50px; font-size: 1rem; opacity: 0.7;">
-            Perfect for modern web applications • Smooth performance • Beautiful aesthetics
-        </p>
-    </div>
 
     <script>
         // Supadev-style Fluid Animation using Canvas 2D (more reliable)
@@ -304,6 +331,14 @@
                 fluidAnimation = new FluidAnimation(canvas);
                 console.log('Fluid animation initialized!');
             }
+            
+            // Fade out overlay after 4 seconds
+            setTimeout(() => {
+                const overlay = document.querySelector('.overlay-content');
+                if (overlay) {
+                    overlay.classList.add('fade-out');
+                }
+            }, 4000);
         });
         
         // Add subtle particle bursts on click

@@ -32,39 +32,85 @@
             height: 100vh;
         }
 
+        .overlay-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
         .title {
-            position: absolute;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #e6e6fa;
-            font-size: 2rem;
-            font-weight: bold;
-            text-align: center;
-            z-index: 1000;
-            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8), 0 0 40px rgba(138, 43, 226, 0.4);
-            animation: title-glow 3s ease-in-out infinite alternate;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 4rem;
+            font-weight: 300;
+            color: #333;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+            animation: titleFadeIn 2s ease-out;
         }
-
-        @keyframes title-glow {
-            0% {
-                text-shadow: 0 0 20px rgba(138, 43, 226, 0.8), 0 0 40px rgba(138, 43, 226, 0.4);
+        
+        .title span {
+            background: linear-gradient(45deg, #8a2be2 0%, #00bfff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .description {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 2rem 3rem;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: descFadeIn 2s ease-out 0.5s both;
+        }
+        
+        .description p {
+            color: #555;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 400;
+        }
+        
+        .description .highlight {
+            color: #8a2be2;
+            font-weight: 600;
+        }
+        
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
             }
-            100% {
-                text-shadow: 0 0 30px rgba(138, 43, 226, 1), 0 0 60px rgba(138, 43, 226, 0.6);
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
-
-        .instructions {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #b0b0ff;
-            font-size: 1rem;
-            text-align: center;
-            z-index: 1000;
-            opacity: 0.9;
+        
+        @keyframes descFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-out {
+            opacity: 0;
+            transition: opacity 2s ease-out;
         }
 
         .electric-cursor {
@@ -165,8 +211,12 @@
     <canvas id="canvas"></canvas>
     
     <div class="container">
-        <div class="title">⚡ Lightning Bolts</div>
-        <div class="instructions">Move cursor for electric trail • Click anywhere for massive lightning strikes!</div>
+        <div class="overlay-content">
+            <h1 class="title"><span>Lightning Bolts</span></h1>
+            <div class="description">
+                <p>Harness the raw power of <span class="highlight">electric energy</span> as lightning bolts arc across your screen, following your cursor with spectacular electric displays.</p>
+            </div>
+        </div>
         
         <div class="electric-cursor" id="electricCursor">
             <div class="cursor-core"></div>
@@ -477,6 +527,14 @@
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', () => {
             new LightningBolts();
+            
+            // Fade out overlay after 4 seconds
+            setTimeout(() => {
+                const overlay = document.querySelector('.overlay-content');
+                if (overlay) {
+                    overlay.classList.add('fade-out');
+                }
+            }, 4000);
         });
     </script>
 </body>

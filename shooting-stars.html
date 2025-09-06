@@ -290,32 +290,85 @@
             }
         }
 
-        .title {
+        .overlay-content {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: white;
-            font-family: 'Arial', sans-serif;
-            font-size: 2.5rem;
-            font-weight: 300;
             text-align: center;
-            z-index: 10;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-            letter-spacing: 3px;
+            z-index: 100;
+            pointer-events: none;
         }
-
-        .subtitle {
-            position: absolute;
-            top: 60%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: rgba(255, 255, 255, 0.7);
-            font-family: 'Arial', sans-serif;
-            font-size: 1rem;
-            text-align: center;
-            z-index: 10;
-            letter-spacing: 1px;
+        
+        .title {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 4rem;
+            font-weight: 300;
+            color: #333;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+            animation: titleFadeIn 2s ease-out;
+        }
+        
+        .title span {
+            background: linear-gradient(45deg, #ffeb3b 0%, #ff9800 50%, #fff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .description {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 2rem 3rem;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: descFadeIn 2s ease-out 0.5s both;
+        }
+        
+        .description p {
+            color: #555;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 400;
+        }
+        
+        .description .highlight {
+            color: #ff9800;
+            font-weight: 600;
+        }
+        
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes descFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-out {
+            opacity: 0;
+            transition: opacity 2s ease-out;
         }
 
         /* Responsive design */
@@ -332,13 +385,17 @@
     </style>
 </head>
 <body>
+    <div class="overlay-content">
+        <h1 class="title"><span>Shooting Stars</span></h1>
+        <div class="description">
+            <p>Journey through the cosmos as <span class="highlight">golden stars</span> streak across the night sky, following your cursor with celestial beauty and orbital mechanics.</p>
+        </div>
+    </div>
+    
     <!-- Planetary System Background -->
     <div class="planetary-system" id="planetarySystem"></div>
     
     <div class="stars-container" id="starsContainer"></div>
-    
-    <div class="title">🌟 SHOOTING STARS</div>
-    <div class="subtitle">Click to merge/unmerge the golden stars following your cursor</div>
 
     <script>
         class ShootingStarsAnimation {
@@ -588,6 +645,14 @@
             window.addEventListener('resize', () => {
                 animation.handleResize();
             });
+            
+            // Fade out overlay after 4 seconds
+            setTimeout(() => {
+                const overlay = document.querySelector('.overlay-content');
+                if (overlay) {
+                    overlay.classList.add('fade-out');
+                }
+            }, 4000);
         });
 
         const style = document.createElement('style');

@@ -25,26 +25,85 @@
             left: 0;
         }
 
-        .instructions {
+        .overlay-content {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #silver;
-            font-family: 'Arial', sans-serif;
-            font-size: 14px;
-            background: rgba(0, 0, 0, 0.4);
-            padding: 12px 18px;
-            border-radius: 10px;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
-            opacity: 1;
-            transition: opacity 0.5s ease;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 100;
+            pointer-events: none;
         }
-
-        .instructions.fade-out {
+        
+        .title {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 4rem;
+            font-weight: 300;
+            color: #333;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+            animation: titleFadeIn 2s ease-out;
+        }
+        
+        .title span {
+            background: linear-gradient(45deg, #c0c0c0 0%, #ffffff 50%, #b8860b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .description {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 2rem 3rem;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: descFadeIn 2s ease-out 0.5s both;
+        }
+        
+        .description p {
+            color: #555;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 400;
+        }
+        
+        .description .highlight {
+            color: #b8860b;
+            font-weight: 600;
+        }
+        
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes descFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-out {
             opacity: 0;
+            transition: opacity 2s ease-out;
         }
 
         .custom-cursor {
@@ -71,12 +130,14 @@
     </style>
 </head>
 <body>
-    <div class="stars-background" id="starsBackground"></div>
-    
-    <div class="instructions" id="instructions">
-        🌙 Move your cursor to control the lunar orbit! Watch the moon phases change!
+    <div class="overlay-content">
+        <h1 class="title"><span>Lunar Orbit</span></h1>
+        <div class="description">
+            <p>Control the celestial dance of the <span class="highlight">moon's orbit</span> with your cursor, witnessing the graceful phases and ethereal glow of our lunar companion.</p>
+        </div>
     </div>
     
+    <div class="stars-background" id="starsBackground"></div>
     <div class="custom-cursor" id="customCursor"></div>
     <canvas id="canvas"></canvas>
 
@@ -99,10 +160,6 @@
                 this.setupEventListeners();
                 this.animate();
                 
-                // Hide instructions after 6 seconds
-                setTimeout(() => {
-                    document.getElementById('instructions').classList.add('fade-out');
-                }, 6000);
             }
 
             init() {
@@ -376,6 +433,14 @@
         // Initialize the lunar orbit system
         document.addEventListener('DOMContentLoaded', () => {
             new LunarOrbitSystem();
+            
+            // Fade out overlay after 4 seconds
+            setTimeout(() => {
+                const overlay = document.querySelector('.overlay-content');
+                if (overlay) {
+                    overlay.classList.add('fade-out');
+                }
+            }, 4000);
         });
     </script>
 </body>

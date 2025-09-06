@@ -26,9 +26,11 @@
             left: 0;
             width: 300px;
             height: 100vh;
-            background: rgba(20, 20, 20, 0.15);
-            backdrop-filter: blur(5px);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(40, 30, 25, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.3);
             z-index: 1000;
             transform: translateX(0);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -37,19 +39,21 @@
         }
 
         .hamburger-menu.closed {
-            transform: translateX(-300px);
+            transform: translateX(-250px);
         }
 
         .hamburger-menu.transparent {
-            background: rgba(20, 20, 20, 0.05);
-            backdrop-filter: blur(2px);
-            border-right: 1px solid rgba(255, 255, 255, 0.02);
+            background: rgba(40, 30, 25, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .hamburger-menu.opaque {
-            background: rgba(20, 20, 20, 0.95);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(40, 30, 25, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .menu-header {
@@ -783,25 +787,14 @@
             }
 
             showAnimationInfo(animationType) {
-                const animationInfo = document.getElementById('animationInfo');
-                const animationTitle = document.getElementById('animationTitle');
-                const animationDescription = document.getElementById('animationDescription');
+                // Animation info is now shown within each animation file itself
+                // Just hide the welcome message
                 const welcomeMessage = document.getElementById('welcomeMessage');
-
-                const animation = this.animations[animationType];
-                if (animation) {
-                    animationTitle.textContent = animation.title;
-                    animationDescription.textContent = animation.description;
-                    animationInfo.classList.add('visible');
-                    welcomeMessage.style.display = 'none';
-                }
+                welcomeMessage.style.display = 'none';
             }
 
             hideAnimationInfo() {
-                const animationInfo = document.getElementById('animationInfo');
                 const welcomeMessage = document.getElementById('welcomeMessage');
-                
-                animationInfo.classList.remove('visible');
                 welcomeMessage.style.display = 'block';
             }
 

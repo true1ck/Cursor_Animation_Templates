@@ -43,72 +43,85 @@
             100% { transform: translateY(-100px) rotate(360deg); }
         }
 
-        .container {
-            position: fixed;
-            top: 50px;
-            left: 50px;
+        .overlay-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
             z-index: 100;
-            color: #ffffff;
-            text-shadow: 0 0 10px rgba(135, 206, 250, 0.8);
+            pointer-events: none;
         }
-
+        
         .title {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #87ceeb, #ffffff, #b0e0e6);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 4rem;
+            font-weight: 300;
+            color: #333;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+            animation: titleFadeIn 2s ease-out;
+        }
+        
+        .title span {
+            background: linear-gradient(45deg, #87ceeb 0%, #b0e0e6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation: titleGlow 3s ease-in-out infinite alternate;
         }
-
-        @keyframes titleGlow {
-            0% { filter: drop-shadow(0 0 5px rgba(135, 206, 250, 0.5)); }
-            100% { filter: drop-shadow(0 0 20px rgba(135, 206, 250, 1)); }
-        }
-
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            margin-bottom: 30px;
-        }
-
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 15px;
+        
+        .description {
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 2rem 3rem;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            animation: descFadeIn 2s ease-out 0.5s both;
         }
-
-        .controls label {
-            font-size: 0.9rem;
-            font-weight: bold;
-            color: #e6f3ff;
+        
+        .description p {
+            color: #555;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 400;
         }
-
-        .controls input[type="range"] {
-            width: 200px;
-            margin-top: 5px;
-            appearance: none;
-            height: 6px;
-            background: linear-gradient(90deg, #87ceeb, #ffffff);
-            border-radius: 3px;
-            outline: none;
+        
+        .description .highlight {
+            color: #87ceeb;
+            font-weight: 600;
         }
-
-        .controls input[type="range"]::-webkit-slider-thumb {
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            background: radial-gradient(circle, #ffffff, #87ceeb);
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(135, 206, 250, 0.8);
+        
+        @keyframes titleFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes descFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-out {
+            opacity: 0;
+            transition: opacity 2s ease-out;
         }
 
         #ice-canvas {
@@ -304,19 +317,10 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1 class="title">❄️ Ice Crystal Magic</h1>
-        <p class="subtitle">Move your cursor to create beautiful ice crystals</p>
-        
-        <div class="controls">
-            <label for="crystal-count">Crystal Count: <span id="count-display">50</span></label>
-            <input type="range" id="crystal-count" min="10" max="100" value="50">
-            
-            <label for="crystal-size">Crystal Size: <span id="size-display">1.0</span></label>
-            <input type="range" id="crystal-size" min="0.5" max="2.0" step="0.1" value="1.0">
-            
-            <label for="attraction-strength">Attraction: <span id="attraction-display">0.5</span></label>
-            <input type="range" id="attraction-strength" min="0" max="1" step="0.1" value="0.5">
+    <div class="overlay-content">
+        <h1 class="title"><span>Ice Crystal</span></h1>
+        <div class="description">
+            <p>Experience the mesmerizing beauty of <span class="highlight">crystalline formations</span> that follow your cursor with elegant, natural movements and stunning ice-like sparkles.</p>
         </div>
     </div>
     
@@ -946,6 +950,14 @@
         // Initialize the ice crystal effect when the page loads
         document.addEventListener('DOMContentLoaded', () => {
             const iceEffect = new IceCrystalEffect();
+            
+            // Fade out overlay after 4 seconds
+            setTimeout(() => {
+                const overlay = document.querySelector('.overlay-content');
+                if (overlay) {
+                    overlay.classList.add('fade-out');
+                }
+            }, 4000);
             
             // Clean up on page unload
             window.addEventListener('beforeunload', () => {
