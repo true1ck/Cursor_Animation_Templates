@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Lightning Bolts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            background: linear-gradient(135deg, #0a0a23, #1a1a3e, #2d1b69);
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            cursor: none;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .title {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #e6e6fa;
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+            text-shadow: 0 0 20px rgba(138, 43, 226, 0.8), 0 0 40px rgba(138, 43, 226, 0.4);
+            animation: title-glow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes title-glow {
+            0% {
+                text-shadow: 0 0 20px rgba(138, 43, 226, 0.8), 0 0 40px rgba(138, 43, 226, 0.4);
+            }
+            100% {
+                text-shadow: 0 0 30px rgba(138, 43, 226, 1), 0 0 60px rgba(138, 43, 226, 0.6);
+            }
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #b0b0ff;
+            font-size: 1rem;
+            text-align: center;
+            z-index: 1000;
+            opacity: 0.9;
+        }
+
+        .electric-cursor {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 999;
+            transform: translate(-50%, -50%);
+        }
+
+        .cursor-core {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 0%, #00bfff 50%, transparent 100%);
+            box-shadow: 0 0 20px #00bfff, 0 0 40px #ffffff, 0 0 60px #00bfff;
+            animation: cursor-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes cursor-pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
+        }
+
+        .cursor-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(0, 191, 255, 0.4);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: cursor-ring-rotate 4s linear infinite;
+        }
+
+        @keyframes cursor-ring-rotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .screen-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0;
+            animation: screen-flash 0.2s ease-out;
+        }
+
+        @keyframes screen-flash {
+            0% {
+                opacity: 0;
+            }
+            30% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .cursor-trail {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 191, 255, 0.8) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 2;
+            animation: fade-out 1s linear forwards;
+        }
+
+        @keyframes fade-out {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="container">
+        <div class="title">⚡ Lightning Bolts</div>
+        <div class="instructions">Move cursor for electric trail • Click anywhere for massive lightning strikes!</div>
+        
+        <div class="electric-cursor" id="electricCursor">
+            <div class="cursor-core"></div>
+            <div class="cursor-ring"></div>
+        </div>
+    </div>
+
+    <script>
+        class LightningBolts {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.electricCursor = document.getElementById('electricCursor');
+                this.container = document.querySelector('.container');
+                
+                this.mouse = { x: 0, y: 0 };
+                this.trails = [];
+                this.lightningBolts = [];
+                this.time = 0;
+                
+                this.colors = {
+                    electric: '#00bfff',
+                    purple: '#8a2be2',
+                    white: '#ffffff',
+                    cyan: '#00ffff',
+                    yellow: '#ffff00',
+                    pink: '#ff1493'
+                };
+                
+                this.init();
+            }
+
+            init() {
+                this.resizeCanvas();
+                this.setupEventListeners();
+                this.animate();
+                
+                window.addEventListener('resize', () => this.resizeCanvas());
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            setupEventListeners() {
+                document.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                    
+                    // Update cursor position
+                    this.electricCursor.style.left = e.clientX + 'px';
+                    this.electricCursor.style.top = e.clientY + 'px';
+                    
+                    // Add trail point
+                    this.addTrailPoint(e.clientX, e.clientY);
+                });
+
+                document.addEventListener('click', (e) => {
+                    this.createLightningStrike(e.clientX, e.clientY);
+                    this.createScreenFlash();
+                });
+
+                // Touch support
+                document.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.mouse.x = touch.clientX;
+                    this.mouse.y = touch.clientY;
+                    
+                    this.electricCursor.style.left = touch.clientX + 'px';
+                    this.electricCursor.style.top = touch.clientY + 'px';
+                    
+                    this.addTrailPoint(touch.clientX, touch.clientY);
+                });
+
+                document.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.createLightningStrike(touch.clientX, touch.clientY);
+                    this.createScreenFlash();
+                });
+            }
+
+            addTrailPoint(x, y) {
+                this.trails.push({
+                    x: x,
+                    y: y,
+                    life: 1.0,
+                    maxLife: 1.0
+                });
+                
+                // Limit trail length
+                if (this.trails.length > 50) {
+                    this.trails.shift();
+                }
+            }
+
+            createLightningStrike(centerX, centerY) {
+                const boltCount = 8 + Math.floor(Math.random() * 6);
+                
+                for (let i = 0; i < boltCount; i++) {
+                    setTimeout(() => {
+                        const angle = (i / boltCount) * Math.PI * 2 + Math.random() * 0.8;
+                        const distance = 200 + Math.random() * 400;
+                        const endX = centerX + Math.cos(angle) * distance;
+                        const endY = centerY + Math.sin(angle) * distance;
+                        
+                        // Ensure end point is within canvas
+                        const clampedEndX = Math.max(0, Math.min(this.canvas.width, endX));
+                        const clampedEndY = Math.max(0, Math.min(this.canvas.height, endY));
+                        
+                        this.createLightningBolt(centerX, centerY, clampedEndX, clampedEndY);
+                        
+                        // Create branch lightning
+                        if (Math.random() > 0.6) {
+                            const midX = (centerX + clampedEndX) / 2;
+                            const midY = (centerY + clampedEndY) / 2;
+                            const branchAngle = angle + (Math.random() - 0.5) * 1.5;
+                            const branchDistance = distance * 0.4;
+                            const branchEndX = midX + Math.cos(branchAngle) * branchDistance;
+                            const branchEndY = midY + Math.sin(branchAngle) * branchDistance;
+                            
+                            setTimeout(() => {
+                                this.createLightningBolt(midX, midY, branchEndX, branchEndY, 0.6);
+                            }, 50);
+                        }
+                    }, i * 30);
+                }
+            }
+
+            createLightningBolt(startX, startY, endX, endY, intensity = 1.0) {
+                const segments = this.generateLightningPath(startX, startY, endX, endY);
+                const colorKeys = Object.keys(this.colors);
+                const color = this.colors[colorKeys[Math.floor(Math.random() * colorKeys.length)]];
+                
+                this.lightningBolts.push({
+                    segments: segments,
+                    color: color,
+                    life: 1.0,
+                    maxLife: 0.3 + Math.random() * 0.4,
+                    intensity: intensity,
+                    width: 2 + Math.random() * 4
+                });
+            }
+
+            generateLightningPath(startX, startY, endX, endY) {
+                const segments = [];
+                const numSegments = 15 + Math.floor(Math.random() * 10);
+                
+                let currentX = startX;
+                let currentY = startY;
+                
+                segments.push({ x: currentX, y: currentY });
+                
+                for (let i = 1; i < numSegments; i++) {
+                    const progress = i / numSegments;
+                    const targetX = startX + (endX - startX) * progress;
+                    const targetY = startY + (endY - startY) * progress;
+                    
+                    // Add randomness for zigzag effect
+                    const randomOffset = 60 * (1 - Math.abs(progress - 0.5) * 2); // More randomness in middle
+                    const offsetX = (Math.random() - 0.5) * randomOffset;
+                    const offsetY = (Math.random() - 0.5) * randomOffset;
+                    
+                    currentX = targetX + offsetX;
+                    currentY = targetY + offsetY;
+                    
+                    segments.push({ x: currentX, y: currentY });
+                }
+                
+                // Ensure we end at the target
+                segments[segments.length - 1] = { x: endX, y: endY };
+                
+                return segments;
+            }
+
+            createScreenFlash() {
+                const flash = document.createElement('div');
+                flash.className = 'screen-flash';
+                document.body.appendChild(flash);
+                
+                setTimeout(() => {
+                    if (flash.parentNode) {
+                        flash.remove();
+                    }
+                }, 200);
+            }
+
+            animate() {
+                this.time += 0.016;
+                
+                // Clear canvas
+                this.ctx.fillStyle = 'rgba(10, 10, 35, 0.1)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Update and draw cursor trail
+                this.drawCursorTrail();
+                
+                // Update and draw lightning bolts
+                this.drawLightningBolts();
+                
+                requestAnimationFrame(() => this.animate());
+            }
+
+            drawCursorTrail() {
+                // Update trail points
+                for (let i = this.trails.length - 1; i >= 0; i--) {
+                    const trail = this.trails[i];
+                    trail.life -= 0.02;
+                    
+                    if (trail.life <= 0) {
+                        this.trails.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // Draw trail point
+                    const alpha = trail.life / trail.maxLife;
+                    const size = 3 + alpha * 5;
+                    
+                    this.ctx.save();
+                    this.ctx.globalAlpha = alpha * 0.8;
+                    this.ctx.fillStyle = '#00bfff';
+                    this.ctx.shadowColor = '#00bfff';
+                    this.ctx.shadowBlur = 10 * alpha;
+                    this.ctx.beginPath();
+                    this.ctx.arc(trail.x, trail.y, size, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.restore();
+                }
+                
+                // Draw connecting lines between trail points
+                if (this.trails.length > 1) {
+                    this.ctx.save();
+                    this.ctx.strokeStyle = '#00bfff';
+                    this.ctx.shadowColor = '#00bfff';
+                    this.ctx.shadowBlur = 5;
+                    this.ctx.lineWidth = 2;
+                    this.ctx.globalAlpha = 0.6;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.trails[0].x, this.trails[0].y);
+                    
+                    for (let i = 1; i < this.trails.length; i++) {
+                        this.ctx.lineTo(this.trails[i].x, this.trails[i].y);
+                    }
+                    
+                    this.ctx.stroke();
+                    this.ctx.restore();
+                }
+            }
+
+            drawLightningBolts() {
+                // Update lightning bolts
+                for (let i = this.lightningBolts.length - 1; i >= 0; i--) {
+                    const bolt = this.lightningBolts[i];
+                    bolt.life -= 0.05;
+                    
+                    if (bolt.life <= 0) {
+                        this.lightningBolts.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // Draw lightning bolt
+                    const alpha = (bolt.life / bolt.maxLife) * bolt.intensity;
+                    const flicker = 0.7 + Math.random() * 0.3; // Flicker effect
+                    
+                    this.ctx.save();
+                    this.ctx.strokeStyle = bolt.color;
+                    this.ctx.shadowColor = bolt.color;
+                    this.ctx.shadowBlur = 20 * alpha;
+                    this.ctx.lineWidth = bolt.width * alpha;
+                    this.ctx.globalAlpha = alpha * flicker;
+                    this.ctx.lineCap = 'round';
+                    this.ctx.lineJoin = 'round';
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(bolt.segments[0].x, bolt.segments[0].y);
+                    
+                    for (let j = 1; j < bolt.segments.length; j++) {
+                        this.ctx.lineTo(bolt.segments[j].x, bolt.segments[j].y);
+                    }
+                    
+                    this.ctx.stroke();
+                    this.ctx.restore();
+                    
+                    // Draw additional glow effect
+                    this.ctx.save();
+                    this.ctx.strokeStyle = bolt.color;
+                    this.ctx.shadowColor = bolt.color;
+                    this.ctx.shadowBlur = 40 * alpha;
+                    this.ctx.lineWidth = (bolt.width + 2) * alpha;
+                    this.ctx.globalAlpha = alpha * 0.3;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(bolt.segments[0].x, bolt.segments[0].y);
+                    
+                    for (let j = 1; j < bolt.segments.length; j++) {
+                        this.ctx.lineTo(bolt.segments[j].x, bolt.segments[j].y);
+                    }
+                    
+                    this.ctx.stroke();
+                    this.ctx.restore();
+                }
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new LightningBolts();
+        });
+    </script>
+</body>
+</html>

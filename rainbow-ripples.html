@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌈 Rainbow Ripples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            background: linear-gradient(135deg, #1e1e1e, #2d2d30);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            cursor: crosshair;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .title {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 2rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ccc;
+            font-size: 1rem;
+            text-align: center;
+            z-index: 1000;
+            opacity: 0.8;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: ripple-animation 2s ease-out forwards;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes ripple-animation {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                width: 400px;
+                height: 400px;
+                opacity: 0;
+            }
+        }
+
+        /* Auto ripple animation */
+        .auto-ripple {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: auto-ripple-animation 3s ease-out infinite;
+        }
+
+        @keyframes auto-ripple-animation {
+            0% {
+                width: 0;
+                height: 0;
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                opacity: 0.6;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                width: 600px;
+                height: 600px;
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1.5);
+            }
+        }
+
+        /* Multiple auto ripples with different delays */
+        .auto-ripple:nth-child(2) { animation-delay: 1s; }
+        .auto-ripple:nth-child(3) { animation-delay: 2s; }
+
+        /* Pulse effect for center */
+        .center-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(255,255,255,0.8), transparent);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0.4;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">🌈 Rainbow Ripples</div>
+        <div class="instructions">Click anywhere to create ripples • Move your mouse for continuous ripples</div>
+        <div class="center-pulse"></div>
+    </div>
+
+    <script>
+        const container = document.querySelector('.container');
+        let isMouseDown = false;
+        let mouseTrailTimeout;
+
+        // Rainbow colors array
+        const rainbowColors = [
+            'radial-gradient(circle, rgba(255,0,0,0.6), rgba(255,0,0,0.2), transparent)',
+            'radial-gradient(circle, rgba(255,165,0,0.6), rgba(255,165,0,0.2), transparent)',
+            'radial-gradient(circle, rgba(255,255,0,0.6), rgba(255,255,0,0.2), transparent)',
+            'radial-gradient(circle, rgba(0,255,0,0.6), rgba(0,255,0,0.2), transparent)',
+            'radial-gradient(circle, rgba(0,191,255,0.6), rgba(0,191,255,0.2), transparent)',
+            'radial-gradient(circle, rgba(0,0,255,0.6), rgba(0,0,255,0.2), transparent)',
+            'radial-gradient(circle, rgba(139,0,255,0.6), rgba(139,0,255,0.2), transparent)',
+            'radial-gradient(circle, rgba(255,20,147,0.6), rgba(255,20,147,0.2), transparent)'
+        ];
+
+        // Create a ripple effect
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            // Random rainbow color
+            const randomColor = rainbowColors[Math.floor(Math.random() * rainbowColors.length)];
+            ripple.style.background = randomColor;
+            ripple.style.border = '2px solid rgba(255,255,255,0.3)';
+            
+            container.appendChild(ripple);
+
+            // Remove ripple after animation
+            setTimeout(() => {
+                ripple.remove();
+            }, 2000);
+        }
+
+        // Create multiple ripples with slight delay
+        function createMultipleRipples(x, y) {
+            createRipple(x, y);
+            setTimeout(() => createRipple(x + Math.random() * 40 - 20, y + Math.random() * 40 - 20), 100);
+            setTimeout(() => createRipple(x + Math.random() * 60 - 30, y + Math.random() * 60 - 30), 200);
+        }
+
+        // Mouse click event
+        container.addEventListener('click', (e) => {
+            createMultipleRipples(e.clientX, e.clientY);
+        });
+
+        // Mouse move event for trailing ripples
+        container.addEventListener('mousemove', (e) => {
+            clearTimeout(mouseTrailTimeout);
+            mouseTrailTimeout = setTimeout(() => {
+                if (Math.random() > 0.7) { // Only create ripples 30% of the time for smoother effect
+                    createRipple(e.clientX, e.clientY);
+                }
+            }, 50);
+        });
+
+        // Touch events for mobile
+        container.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            createMultipleRipples(touch.clientX, touch.clientY);
+        });
+
+        container.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            if (Math.random() > 0.8) {
+                createRipple(touch.clientX, touch.clientY);
+            }
+        });
+
+        // Auto-generate ripples at random positions
+        function createAutoRipple() {
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            
+            const ripple = document.createElement('div');
+            ripple.className = 'auto-ripple';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            // Random rainbow color with more transparency
+            const randomColor = rainbowColors[Math.floor(Math.random() * rainbowColors.length)];
+            ripple.style.background = randomColor.replace('0.6', '0.3').replace('0.2', '0.1');
+            ripple.style.border = '1px solid rgba(255,255,255,0.2)';
+            
+            container.appendChild(ripple);
+
+            // Remove ripple after animation
+            setTimeout(() => {
+                ripple.remove();
+            }, 3000);
+        }
+
+        // Create auto ripples every 2 seconds
+        setInterval(createAutoRipple, 2000);
+
+        // Keyboard interaction
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                // Create ripple at center
+                createMultipleRipples(window.innerWidth / 2, window.innerHeight / 2);
+            }
+        });
+
+        // Create initial ripples
+        setTimeout(() => {
+            createRipple(window.innerWidth / 2, window.innerHeight / 2);
+        }, 500);
+    </script>
+</body>
+</html>

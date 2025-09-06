@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lunar Orbit Effects</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            background: radial-gradient(circle at center, #0f0f23 0%, #000000 100%);
+            height: 100vh;
+            cursor: none;
+        }
+
+        #canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .instructions {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #silver;
+            font-family: 'Arial', sans-serif;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px 18px;
+            border-radius: 10px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .instructions.fade-out {
+            opacity: 0;
+        }
+
+        .custom-cursor {
+            position: absolute;
+            pointer-events: none;
+            z-index: 999;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+            transform: translate(-50%, -50%);
+        }
+
+        .stars-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars-background" id="starsBackground"></div>
+    
+    <div class="instructions" id="instructions">
+        🌙 Move your cursor to control the lunar orbit! Watch the moon phases change!
+    </div>
+    
+    <div class="custom-cursor" id="customCursor"></div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        class LunarOrbitSystem {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.customCursor = document.getElementById('customCursor');
+                this.mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+                this.orbitParticles = [];
+                this.moonPhase = 0;
+                this.orbitRadius = 80;
+                this.orbitSpeed = 0.02;
+                this.time = 0;
+                this.stars = [];
+                
+                this.init();
+                this.createStarField();
+                this.setupEventListeners();
+                this.animate();
+                
+                // Hide instructions after 6 seconds
+                setTimeout(() => {
+                    document.getElementById('instructions').classList.add('fade-out');
+                }, 6000);
+            }
+
+            init() {
+                this.resizeCanvas();
+                window.addEventListener('resize', () => {
+                    this.resizeCanvas();
+                    this.createStarField();
+                });
+                
+                // Initialize orbit particles
+                this.createOrbitParticles();
+            }
+
+            resizeCanvas() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+
+            createStarField() {
+                const starsContainer = document.getElementById('starsBackground');
+                starsContainer.innerHTML = '';
+                
+                for (let i = 0; i < 200; i++) {
+                    const star = document.createElement('div');
+                    star.style.position = 'absolute';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 100 + '%';
+                    star.style.width = (Math.random() * 3 + 1) + 'px';
+                    star.style.height = star.style.width;
+                    star.style.backgroundColor = 'white';
+                    star.style.borderRadius = '50%';
+                    star.style.opacity = Math.random() * 0.8 + 0.2;
+                    star.style.boxShadow = `0 0 ${Math.random() * 10 + 5}px rgba(255, 255, 255, 0.8)`;
+                    star.style.animation = `twinkle ${Math.random() * 4 + 2}s infinite`;
+                    starsContainer.appendChild(star);
+                }
+
+                // Add CSS for twinkling animation
+                if (!document.querySelector('#twinkle-animation')) {
+                    const style = document.createElement('style');
+                    style.id = 'twinkle-animation';
+                    style.textContent = `
+                        @keyframes twinkle {
+                            0%, 100% { opacity: 0.2; }
+                            50% { opacity: 1; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            }
+
+            setupEventListeners() {
+                document.addEventListener('mousemove', (e) => {
+                    this.mouse.x = e.clientX;
+                    this.mouse.y = e.clientY;
+                    
+                    // Update custom cursor position
+                    this.customCursor.style.left = e.clientX + 'px';
+                    this.customCursor.style.top = e.clientY + 'px';
+                });
+
+                // Handle touch for mobile
+                document.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    this.mouse.x = touch.clientX;
+                    this.mouse.y = touch.clientY;
+                    
+                    this.customCursor.style.left = touch.clientX + 'px';
+                    this.customCursor.style.top = touch.clientY + 'px';
+                });
+            }
+
+            createOrbitParticles() {
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i / 12) * Math.PI * 2;
+                    const particle = new OrbitParticle(angle, this.orbitRadius + Math.random() * 20);
+                    this.orbitParticles.push(particle);
+                }
+            }
+
+            animate() {
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.time += 0.01;
+                
+                // Update moon phase based on cursor position
+                this.moonPhase = (this.mouse.x / this.canvas.width) * Math.PI * 2;
+                
+                // Draw moon with phases
+                this.drawMoon();
+                
+                // Update and draw orbit particles
+                this.updateOrbitParticles();
+                
+                // Draw orbital trail
+                this.drawOrbitTrail();
+                
+                // Draw lunar glow effect
+                this.drawLunarGlow();
+                
+                requestAnimationFrame(() => this.animate());
+            }
+
+            drawMoon() {
+                const moonSize = 30 + Math.sin(this.time * 2) * 5;
+                
+                this.ctx.save();
+                
+                // Moon base
+                this.ctx.fillStyle = '#f0f0f0';
+                this.ctx.shadowColor = '#ffffff';
+                this.ctx.shadowBlur = 20;
+                this.ctx.beginPath();
+                this.ctx.arc(this.mouse.x, this.mouse.y, moonSize, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Moon phase shadow
+                this.ctx.globalCompositeOperation = 'source-atop';
+                const phaseOffset = Math.cos(this.moonPhase) * moonSize;
+                
+                if (phaseOffset < 0) {
+                    // Waning phases
+                    this.ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.mouse.x + Math.abs(phaseOffset), this.mouse.y, moonSize, 0, Math.PI * 2);
+                    this.ctx.fill();
+                } else {
+                    // Waxing phases
+                    this.ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
+                    this.ctx.beginPath();
+                    this.ctx.arc(this.mouse.x - phaseOffset, this.mouse.y, moonSize, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Moon craters
+                this.ctx.globalCompositeOperation = 'multiply';
+                this.ctx.fillStyle = 'rgba(200, 200, 200, 0.6)';
+                
+                // Draw some craters
+                const craters = [
+                    { x: -8, y: -5, size: 3 },
+                    { x: 10, y: 8, size: 5 },
+                    { x: -15, y: 12, size: 4 },
+                    { x: 5, y: -15, size: 2 }
+                ];
+                
+                craters.forEach(crater => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(
+                        this.mouse.x + crater.x, 
+                        this.mouse.y + crater.y, 
+                        crater.size, 
+                        0, Math.PI * 2
+                    );
+                    this.ctx.fill();
+                });
+                
+                this.ctx.restore();
+            }
+
+            updateOrbitParticles() {
+                this.orbitParticles.forEach(particle => {
+                    particle.update(this.mouse, this.time);
+                    particle.draw(this.ctx);
+                });
+            }
+
+            drawOrbitTrail() {
+                const trailRadius = this.orbitRadius + 10;
+                
+                this.ctx.save();
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                this.ctx.lineWidth = 1;
+                this.ctx.setLineDash([5, 10]);
+                this.ctx.beginPath();
+                this.ctx.arc(this.mouse.x, this.mouse.y, trailRadius, 0, Math.PI * 2);
+                this.ctx.stroke();
+                
+                // Inner orbit trail
+                this.ctx.strokeStyle = 'rgba(200, 200, 255, 0.15)';
+                this.ctx.setLineDash([3, 8]);
+                this.ctx.beginPath();
+                this.ctx.arc(this.mouse.x, this.mouse.y, trailRadius - 15, 0, Math.PI * 2);
+                this.ctx.stroke();
+                
+                this.ctx.restore();
+            }
+
+            drawLunarGlow() {
+                const glowSize = 100 + Math.sin(this.time * 3) * 20;
+                
+                // Outer glow
+                const gradient = this.ctx.createRadialGradient(
+                    this.mouse.x, this.mouse.y, 0,
+                    this.mouse.x, this.mouse.y, glowSize
+                );
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 0.05)');
+                gradient.addColorStop(0.5, 'rgba(200, 220, 255, 0.02)');
+                gradient.addColorStop(1, 'transparent');
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath();
+                this.ctx.arc(this.mouse.x, this.mouse.y, glowSize, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+
+        class OrbitParticle {
+            constructor(angle, radius) {
+                this.angle = angle;
+                this.baseRadius = radius;
+                this.radius = radius;
+                this.size = Math.random() * 3 + 1;
+                this.speed = 0.01 + Math.random() * 0.02;
+                this.orbitOffset = Math.random() * Math.PI * 2;
+                this.glowIntensity = Math.random();
+                this.color = this.getRandomLunarColor();
+            }
+
+            getRandomLunarColor() {
+                const colors = [
+                    'rgba(255, 255, 255, 0.8)',
+                    'rgba(200, 220, 255, 0.7)',
+                    'rgba(255, 240, 200, 0.6)',
+                    'rgba(180, 200, 255, 0.8)',
+                    'rgba(255, 255, 240, 0.9)'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update(mousePos, time) {
+                this.angle += this.speed;
+                
+                // Add some orbit variation
+                this.radius = this.baseRadius + Math.sin(time * 2 + this.orbitOffset) * 10;
+                
+                // Calculate position
+                this.x = mousePos.x + Math.cos(this.angle) * this.radius;
+                this.y = mousePos.y + Math.sin(this.angle) * this.radius;
+                
+                // Update glow intensity
+                this.glowIntensity = (Math.sin(time * 3 + this.orbitOffset) + 1) / 2;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                
+                // Draw particle with glow
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = this.size * 4 * this.glowIntensity;
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw connecting line to center (very faint)
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * this.glowIntensity})`;
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x + (this.x - this.x) * 0.1, this.y + (this.y - this.y) * 0.1);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+        }
+
+        // Initialize the lunar orbit system
+        document.addEventListener('DOMContentLoaded', () => {
+            new LunarOrbitSystem();
+        });
+    </script>
+</body>
+</html>
